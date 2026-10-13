@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+title: RGB-TIR Match Bench
+message: If you use this software, please cite it and the paper/datasets listed in README.md.
+type: software
+authors:
+  - family-names: soncris3012
+repository-code: https://github.com/soncris3012/rgbtir-match-bench-qt
+version: 0.1.0
+date-released: 2026-10-13
+license: MIT
+preferred-citation:
+  type: article
+  title: Evaluating Deep Learning Local Features for RGB-Thermal Image Matching and 3D InfraRed Thermography
+  authors:
+    - family-names: Morelli
+      given-names: Luca
+    - family-names: Sutherland
+      given-names: Neil
+    - family-names: Ioli
+      given-names: Francesco
+    - family-names: Vitti
+      given-names: Alfonso
+    - family-names: Marsh
+      given-names: Stuart
+    - family-names: Mills
+      given-names: Jon
+    - family-names: Bryan
+      given-names: Paul
+    - family-names: Remondino
+      given-names: Fabio
+  journal: Geomatics
+  year: 2026
+  volume: 6
+  issue: 4
+  doi: 10.3390/geomatics6040083
+

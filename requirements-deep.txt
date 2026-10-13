@@ -1,0 +1,6 @@
+-r requirements.txt
+torch>=2.2
+torchvision>=0.17
+kornia>=0.7.3
+lightglue @ git+https://github.com/cvg/LightGlue.git
+
