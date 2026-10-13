@@ -94,7 +94,9 @@ void DropZone::chooseImage()
         this,
         QStringLiteral("Chọn ảnh RGB / hồng ngoại"),
         path_.isEmpty() ? QString() : QFileInfo(path_).absolutePath(),
-        QStringLiteral("Ảnh (*.jpg *.jpeg *.png *.bmp *.tif *.tiff);;Tất cả tệp (*)"));
+        QStringLiteral("Ảnh (*.jpg *.jpeg *.png *.bmp *.tif *.tiff);;Tất cả tệp (*)"),
+        nullptr,
+        QFileDialog::DontUseNativeDialog);
     if (!file.isEmpty())
         setPath(file);
 }
@@ -105,7 +107,10 @@ void DropZone::chooseDirectory()
         ? QString()
         : (QFileInfo(path_).isDir() ? path_ : QFileInfo(path_).absolutePath());
     const QString directory = QFileDialog::getExistingDirectory(
-        this, QStringLiteral("Chọn thư mục ảnh"), initial);
+        this,
+        QStringLiteral("Chọn thư mục ảnh"),
+        initial,
+        QFileDialog::ShowDirsOnly | QFileDialog::DontUseNativeDialog);
     if (!directory.isEmpty())
         setPath(directory);
 }

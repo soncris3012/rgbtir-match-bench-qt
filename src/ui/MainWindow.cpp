@@ -292,7 +292,8 @@ void MainWindow::chooseDatasetRoot()
     const QString root = QFileDialog::getExistingDirectory(
         this,
         QStringLiteral("Chọn thư mục gốc LLVIP / RoadScene"),
-        datasetRoot_->text());
+        datasetRoot_->text(),
+        QFileDialog::ShowDirsOnly | QFileDialog::DontUseNativeDialog);
     if (root.isEmpty())
         return;
     datasetRoot_->setText(root);
