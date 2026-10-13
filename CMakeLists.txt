@@ -10,10 +10,15 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.4 REQUIRED COMPONENTS Widgets Test)
-# OpenCV 5 renamed features2d/calib3d to features/calib. Loading the
-# exported package without a component list keeps this project compatible
-# with both OpenCV 4 and 5.
-find_package(OpenCV REQUIRED)
+# OpenCV 5 renamed features2d/calib3d to features/calib.
+find_package(OpenCV REQUIRED COMPONENTS core)
+if(OpenCV_VERSION_MAJOR GREATER_EQUAL 5)
+    set(RGBTIR_OPENCV_LIBS
+        opencv_core opencv_imgproc opencv_imgcodecs opencv_features opencv_calib)
+else()
+    set(RGBTIR_OPENCV_LIBS
+        opencv_core opencv_imgproc opencv_imgcodecs opencv_features2d opencv_calib3d)
+endif()
 
 add_library(rgbtir_core
     src/core/BenchmarkEngine.cpp
@@ -23,7 +28,7 @@ add_library(rgbtir_core
     src/core/ReportWriter.cpp
 )
 target_include_directories(rgbtir_core PUBLIC src ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(rgbtir_core PUBLIC Qt6::Core ${OpenCV_LIBS})
+target_link_libraries(rgbtir_core PUBLIC Qt6::Core ${RGBTIR_OPENCV_LIBS})
 target_compile_definitions(rgbtir_core PUBLIC QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII)
 
 add_executable(rgbtir-match-bench

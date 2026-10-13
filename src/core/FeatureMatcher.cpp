@@ -1,10 +1,6 @@
 #include "core/FeatureMatcher.h"
 
 #include <opencv2/features2d.hpp>
-#include <opencv2/core/version.hpp>
-#if CV_VERSION_MAJOR >= 5
-#include <opencv2/xfeatures2d.hpp>
-#endif
 #include <opencv2/imgproc.hpp>
 #include <stdexcept>
 
@@ -16,28 +12,14 @@ public:
     OpenCvFeatureMatcher(const QString &method, int maxKeypoints)
         : method_(method)
     {
-        if (method == QStringLiteral("SIFT")) {
+        if (method == QStringLiteral("SIFT")
+            || method == QStringLiteral("Gradient-SIFT")
+            || method == QStringLiteral("Laplacian-SIFT")) {
             detector_ = cv::SIFT::create(maxKeypoints);
             norm_ = cv::NORM_L2;
             ratio_ = 0.80f;
         } else if (method == QStringLiteral("ORB")) {
             detector_ = cv::ORB::create(maxKeypoints);
-            norm_ = cv::NORM_HAMMING;
-            ratio_ = 0.82f;
-        } else if (method == QStringLiteral("AKAZE")) {
-#if CV_VERSION_MAJOR >= 5
-            detector_ = cv::xfeatures2d::AKAZE::create();
-#else
-            detector_ = cv::AKAZE::create();
-#endif
-            norm_ = cv::NORM_HAMMING;
-            ratio_ = 0.82f;
-        } else if (method == QStringLiteral("BRISK")) {
-#if CV_VERSION_MAJOR >= 5
-            detector_ = cv::xfeatures2d::BRISK::create();
-#else
-            detector_ = cv::BRISK::create();
-#endif
             norm_ = cv::NORM_HAMMING;
             ratio_ = 0.82f;
         } else {
@@ -51,8 +33,8 @@ public:
     {
         cv::Mat gray0;
         cv::Mat gray1;
-        cv::cvtColor(visible, gray0, cv::COLOR_BGR2GRAY);
-        cv::cvtColor(thermal, gray1, cv::COLOR_BGR2GRAY);
+        gray0 = representation(visible);
+        gray1 = representation(thermal);
 
         std::vector<cv::KeyPoint> keypoints0;
         std::vector<cv::KeyPoint> keypoints1;
@@ -79,6 +61,30 @@ public:
     }
 
 private:
+    cv::Mat representation(const cv::Mat &image) const
+    {
+        cv::Mat gray;
+        cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+        if (method_ == QStringLiteral("Gradient-SIFT")) {
+            cv::Mat dx;
+            cv::Mat dy;
+            cv::Mat magnitude;
+            cv::Sobel(gray, dx, CV_32F, 1, 0, 3);
+            cv::Sobel(gray, dy, CV_32F, 0, 1, 3);
+            cv::magnitude(dx, dy, magnitude);
+            cv::normalize(magnitude, magnitude, 0, 255, cv::NORM_MINMAX);
+            magnitude.convertTo(gray, CV_8U);
+            cv::GaussianBlur(gray, gray, cv::Size(3, 3), 0.0);
+        } else if (method_ == QStringLiteral("Laplacian-SIFT")) {
+            cv::Mat smooth;
+            cv::Mat laplacian;
+            cv::GaussianBlur(gray, smooth, cv::Size(5, 5), 1.0);
+            cv::Laplacian(smooth, laplacian, CV_32F, 3);
+            cv::convertScaleAbs(laplacian, gray);
+        }
+        return gray;
+    }
+
     QString method_;
     cv::Ptr<cv::Feature2D> detector_;
     int norm_ = cv::NORM_L2;
@@ -89,8 +95,8 @@ private:
 
 QStringList FeatureMatcherFactory::availableMethods()
 {
-    return {QStringLiteral("SIFT"), QStringLiteral("ORB"),
-            QStringLiteral("AKAZE"), QStringLiteral("BRISK")};
+    return {QStringLiteral("SIFT"), QStringLiteral("Gradient-SIFT"),
+            QStringLiteral("Laplacian-SIFT"), QStringLiteral("ORB")};
 }
 
 std::unique_ptr<IFeatureMatcher> FeatureMatcherFactory::create(

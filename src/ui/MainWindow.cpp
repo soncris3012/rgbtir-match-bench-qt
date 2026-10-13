@@ -8,7 +8,6 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QDoubleSpinBox>
-#include <QFileDialog>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
@@ -113,10 +112,8 @@ void MainWindow::buildUi()
     dropLayout->addWidget(thermalDrop_);
     leftLayout->addLayout(dropLayout);
 
-    auto *rootButton = new QPushButton(QStringLiteral("CHỌN THƯ MỤC GỐC LLVIP / ROADSCENE"), left);
-    rootButton->setObjectName(QStringLiteral("outlineButton"));
-    leftLayout->addWidget(rootButton);
-    datasetStatus_ = new QLabel(QStringLiteral("Chưa chọn dữ liệu"), left);
+    datasetStatus_ = new QLabel(
+        QStringLiteral("Thả riêng hai thư mục, hoặc thả thư mục gốc LLVIP/RoadScene vào một trong hai khung."), left);
     datasetStatus_->setObjectName(QStringLiteral("datasetStatus"));
     datasetStatus_->setWordWrap(true);
     leftLayout->addWidget(datasetStatus_);
@@ -129,12 +126,12 @@ void MainWindow::buildUi()
     for (int i = 0; i < methods.size(); ++i) {
         auto *item = new QListWidgetItem(methods.at(i), methodList_);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(i == 0 ? Qt::Checked : Qt::Unchecked);
+        item->setCheckState(i < 2 ? Qt::Checked : Qt::Unchecked);
     }
     leftLayout->addWidget(methodList_, 1);
 
     auto *matcherNote = new QLabel(
-        QStringLiteral("Baseline C++ thuần OpenCV. SIFT là baseline chính của bài báo; ORB, AKAZE và BRISK dùng để đối chứng."), left);
+        QStringLiteral("Không model, không trọng số. Gradient-SIFT và Laplacian-SIFT dùng cấu trúc ảnh để giảm ảnh hưởng khác biệt RGB–IR."), left);
     matcherNote->setObjectName(QStringLiteral("note"));
     matcherNote->setWordWrap(true);
     leftLayout->addWidget(matcherNote);
@@ -205,11 +202,8 @@ void MainWindow::buildUi()
     rightLayout->addWidget(statusLabel_);
     rightLayout->addWidget(openReportButton_);
 
-    connect(visibleDrop_, &DropZone::browseRequested, this, &MainWindow::browseVisible);
-    connect(thermalDrop_, &DropZone::browseRequested, this, &MainWindow::browseThermal);
     connect(visibleDrop_, &DropZone::pathChanged, this, &MainWindow::validateDataset);
     connect(thermalDrop_, &DropZone::pathChanged, this, &MainWindow::validateDataset);
-    connect(rootButton, &QPushButton::clicked, this, &MainWindow::browseRoot);
     connect(runButton_, &QPushButton::clicked, this, &MainWindow::startBenchmark);
     connect(stopButton_, &QPushButton::clicked, this, &MainWindow::stopBenchmark);
     connect(openReportButton_, &QPushButton::clicked, this, &MainWindow::openReport);
@@ -223,12 +217,12 @@ void MainWindow::applyMonochromeStyle()
         #subtitle, #note, #datasetStatus, #statusLabel { color:#606060; }
         #rule { color:#111111; background:#111111; max-height:1px; }
         #sectionLabel { font-size:12px; font-weight:800; letter-spacing:1.5px; padding:7px 0 2px 0; }
-        #dropZone { background:#ffffff; border:2px dashed #858585; border-radius:2px; min-height:118px; }
+        #dropZone { background:#ffffff; border:2px dashed #858585; border-radius:0; min-height:138px; }
         #dropZone:hover, #dropZone[active="true"] { border:2px solid #111111; background:#eeeeeb; }
         #dropTitle { font-weight:800; font-size:13px; }
         #dropValue { color:#555555; }
         #dropCaption { color:#777777; font-size:10px; letter-spacing:0.8px; }
-        QPushButton { min-height:36px; padding:0 15px; border-radius:2px; font-weight:700; letter-spacing:0.6px; }
+        QPushButton { min-height:36px; padding:0 15px; border-radius:0; font-weight:700; letter-spacing:0.6px; }
         #primaryButton { background:#111111; color:#ffffff; border:1px solid #111111; }
         #primaryButton:hover { background:#333333; }
         #secondaryButton, #outlineButton { background:#ffffff; color:#111111; border:1px solid #111111; }
@@ -244,35 +238,22 @@ void MainWindow::applyMonochromeStyle()
     )"));
 }
 
-void MainWindow::browseVisible()
-{
-    const QString path = QFileDialog::getExistingDirectory(this, QStringLiteral("Chọn thư mục RGB"));
-    if (!path.isEmpty()) visibleDrop_->setPath(path);
-}
-
-void MainWindow::browseThermal()
-{
-    const QString path = QFileDialog::getExistingDirectory(this, QStringLiteral("Chọn thư mục ảnh nhiệt"));
-    if (!path.isEmpty()) thermalDrop_->setPath(path);
-}
-
-void MainWindow::browseRoot()
-{
-    const QString root = QFileDialog::getExistingDirectory(this, QStringLiteral("Chọn thư mục gốc dataset"));
-    if (root.isEmpty()) return;
-    QString visible;
-    QString thermal;
-    if (!DatasetPairer::detectDatasetRoot(root, &visible, &thermal, &datasetName_)) {
-        QMessageBox::warning(this, QStringLiteral("Không nhận dạng được"),
-            QStringLiteral("Không thấy cấu trúc LLVIP hoặc RoadScene. Hãy thả riêng hai thư mục RGB và IR."));
-        return;
-    }
-    visibleDrop_->setPath(visible);
-    thermalDrop_->setPath(thermal);
-}
-
 void MainWindow::validateDataset()
 {
+    if (auto *zone = qobject_cast<DropZone *>(sender())) {
+        QString detectedVisible;
+        QString detectedThermal;
+        QString detectedName;
+        if (DatasetPairer::detectDatasetRoot(
+                zone->path(), &detectedVisible, &detectedThermal, &detectedName)) {
+            datasetName_ = detectedName;
+            if (visibleDrop_->path() != detectedVisible)
+                visibleDrop_->setPath(detectedVisible);
+            if (thermalDrop_->path() != detectedThermal)
+                thermalDrop_->setPath(detectedThermal);
+            return;
+        }
+    }
     if (visibleDrop_->path().isEmpty() || thermalDrop_->path().isEmpty()) return;
     try {
         QStringList warnings;

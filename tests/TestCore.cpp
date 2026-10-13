@@ -1,5 +1,6 @@
 #include "core/DatasetPairer.h"
 #include "core/BenchmarkEngine.h"
+#include "core/FeatureMatcher.h"
 #include "core/MetricCalculator.h"
 
 #include <QDir>
@@ -114,10 +115,10 @@ void TestCore::runsSiftAndWritesReports()
     config.visibleDir = QFileInfo(visiblePath).path();
     config.thermalDir = QFileInfo(thermalPath).path();
     config.outputDir = temporary.filePath(QStringLiteral("runs"));
-    config.methods = {QStringLiteral("SIFT")};
+    config.methods = rgbtir::FeatureMatcherFactory::availableMethods();
     config.maxPairs = 1;
     const rgbtir::BenchmarkResult result = rgbtir::BenchmarkEngine::run(config);
-    QCOMPARE(result.summary.size(), 1);
+    QCOMPARE(result.summary.size(), 4);
     QVERIFY(QFileInfo::exists(result.runDirectory + QStringLiteral("/summary.csv")));
     QVERIFY(QFileInfo::exists(result.runDirectory + QStringLiteral("/report.html")));
 }

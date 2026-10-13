@@ -6,7 +6,6 @@
 #include <QFileInfo>
 #include <QLabel>
 #include <QMimeData>
-#include <QMouseEvent>
 #include <QStyle>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -17,7 +16,6 @@ DropZone::DropZone(const QString &title, const QString &hint, QWidget *parent)
     : QFrame(parent)
 {
     setAcceptDrops(true);
-    setCursor(Qt::PointingHandCursor);
     setObjectName(QStringLiteral("dropZone"));
     setProperty("active", false);
 
@@ -29,7 +27,7 @@ DropZone::DropZone(const QString &title, const QString &hint, QWidget *parent)
     valueLabel_ = new QLabel(hint, this);
     valueLabel_->setObjectName(QStringLiteral("dropValue"));
     valueLabel_->setWordWrap(true);
-    auto *caption = new QLabel(QStringLiteral("KÉO THƯ MỤC HOẶC BẤM ĐỂ CHỌN"), this);
+    auto *caption = new QLabel(QStringLiteral("THẢ THƯ MỤC VÀO KHUNG NÀY"), this);
     caption->setObjectName(QStringLiteral("dropCaption"));
     layout->addWidget(titleLabel);
     layout->addWidget(valueLabel_, 1);
@@ -74,13 +72,6 @@ void DropZone::dropEvent(QDropEvent *event)
         setPath(urls.first().toLocalFile());
         event->acceptProposedAction();
     }
-}
-
-void DropZone::mousePressEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::LeftButton)
-        emit browseRequested();
-    QFrame::mousePressEvent(event);
 }
 
 } // namespace rgbtir

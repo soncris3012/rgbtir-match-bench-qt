@@ -26,9 +26,6 @@ public:
     ~MainWindow() override;
 
 private slots:
-    void browseVisible();
-    void browseThermal();
-    void browseRoot();
     void validateDataset();
     void startBenchmark();
     void stopBenchmark();

@@ -18,13 +18,11 @@ public:
 
 signals:
     void pathChanged(const QString &path);
-    void browseRequested();
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     void setActive(bool active);

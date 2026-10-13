@@ -9,15 +9,15 @@
 ## Điểm chính
 
 - Giao diện Qt Widgets viết hoàn toàn bằng C++.
-- Hai vùng kéo‑thả lớn cho thư mục RGB và IR; cũng có thể bấm trực tiếp để chọn.
+- Hai vùng kéo‑thả vuông cho thư mục RGB và IR; không có hộp chọn tệp chen vào quy trình.
 - Tự nhận dạng cấu trúc LLVIP và RoadScene.
 - Toàn bộ nút bấm và giao diện dùng bảng màu đơn sắc trắng–đen–xám.
 - Benchmark chạy trong `QThread`, không làm treo giao diện; hỗ trợ dừng sau cặp hiện tại.
-- Matcher C++ tích hợp: SIFT, ORB, AKAZE và BRISK.
+- Matcher tích hợp sẵn trong binary: SIFT, Gradient-SIFT, Laplacian-SIFT và ORB.
 - Xuất `per_pair.csv`, `summary.csv`, `results.json` và `report.html`.
 - Unit test bằng Qt Test và CI GitHub Actions.
 
-SIFT là baseline thủ công chính được bài báo dùng để chỉ ra khó khăn của ghép RGB–TIR. ORB, AKAZE và BRISK được thêm làm nhóm đối chứng C++ nhẹ. Kiến trúc `IFeatureMatcher` cho phép tích hợp LightGlue/ONNX Runtime C++ sau này mà không sửa GUI, metric hoặc report.
+Không có model, checkpoint, ONNX hay trọng số phải nạp thêm. SIFT là baseline thủ công chính được bài báo dùng để chỉ ra khó khăn của ghép RGB–TIR. Gradient-SIFT và Laplacian-SIFT chuyển hai modality sang biểu diễn cấu trúc trước khi trích đặc trưng, nhờ đó tạo đối chứng không cần học máy; ORB là baseline nhị phân nhẹ.
 
 ## Phạm vi khoa học
 
@@ -124,7 +124,7 @@ RoadScene/
 
 ## Sử dụng
 
-1. Kéo thư mục `visible` vào ô bên trái và `infrared` vào ô bên phải; hoặc bấm **CHỌN THƯ MỤC GỐC**.
+1. Kéo thư mục `visible` vào ô bên trái và `infrared` vào ô bên phải. Cũng có thể kéo cả thư mục gốc LLVIP/RoadScene vào một trong hai ô để ứng dụng tự nhận dạng.
 2. Chọn một hoặc nhiều matcher.
 3. Đặt số cặp tối đa, ngưỡng đúng, ngưỡng RANSAC và số keypoint.
 4. Bấm **CHẠY BENCHMARK**.
@@ -168,7 +168,7 @@ src/
 3. Đăng ký tên và factory trong `FeatureMatcherFactory`.
 4. GUI, RANSAC, metric và report sẽ dùng matcher mới tự động.
 
-Để triển khai SuperPoint + LightGlue bằng C++, có thể kết nối ONNX Runtime với model xuất từ [LightGlue-ONNX](https://github.com/ct-hub/LightGlue-ONNX). Cần kiểm tra giấy phép riêng của pretrained weights, đặc biệt SuperPoint, trước khi phân phối.
+Các phương pháp hiện tại đều chạy ngay sau khi build, không tải model từ Internet và không yêu cầu đường dẫn trọng số.
 
 ## Kiểm thử
 
