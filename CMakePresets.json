@@ -4,7 +4,7 @@
     {
       "name": "release",
       "displayName": "Release",
-      "generator": "Ninja",
+      "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",

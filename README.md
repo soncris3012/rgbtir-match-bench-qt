@@ -49,12 +49,12 @@ eᵢ = ||xᵢ_RGB − scale(xᵢ_IR)||₂
 - CMake 3.22 trở lên.
 - Qt 6.4 trở lên, module Widgets và Test.
 - OpenCV 4 trở lên với `features2d` và `calib3d`.
-- Ninja được khuyến nghị nhưng không bắt buộc.
+- Trình biên dịch C++ đi kèm Xcode Command Line Tools; preset mặc định dùng `make`, không cần cài Ninja.
 
 ## Build trên macOS
 
 ```bash
-brew install cmake ninja qt opencv
+brew install cmake qt opencv
 git clone https://github.com/soncris3012/rgbtir-match-bench-qt.git
 cd rgbtir-match-bench-qt
 
