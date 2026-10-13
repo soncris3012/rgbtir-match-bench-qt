@@ -19,6 +19,12 @@ public slots:
 
 signals:
     void progress(int current, int total, const QString &message);
+    void pairStarted(
+        const QString &visiblePath,
+        const QString &thermalPath,
+        const QString &method,
+        int current,
+        int total);
     void completed(const rgbtir::BenchmarkResult &result);
     void failed(const QString &message);
     void finished();

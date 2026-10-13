@@ -24,6 +24,7 @@
 #include <QPixmap>
 #include <QSpinBox>
 #include <QSplitter>
+#include <QStandardPaths>
 #include <QTableWidget>
 #include <QThread>
 #include <QUrl>
@@ -415,7 +416,9 @@ void MainWindow::startBenchmark()
     config.correctnessPx = correctness_->value();
     config.ransacPx = ransac_->value();
     config.maxKeypoints = maxKeypoints_->value();
-    config.outputDir = QDir::current().filePath(QStringLiteral("runs"));
+    config.outputDir = QDir(
+        QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation))
+        .filePath(QStringLiteral("runs"));
 
     resultTable_->setRowCount(0);
     progressBar_->setValue(0);
@@ -428,6 +431,7 @@ void MainWindow::startBenchmark()
     worker_->moveToThread(workerThread_);
     connect(workerThread_, &QThread::started, worker_, &BenchmarkWorker::run);
     connect(worker_, &BenchmarkWorker::progress, this, &MainWindow::updateProgress);
+    connect(worker_, &BenchmarkWorker::pairStarted, this, &MainWindow::showCurrentPair);
     connect(worker_, &BenchmarkWorker::completed, this, &MainWindow::showResult);
     connect(worker_, &BenchmarkWorker::failed, this, &MainWindow::showFailure);
     connect(worker_, &BenchmarkWorker::finished, workerThread_, &QThread::quit);
@@ -454,6 +458,21 @@ void MainWindow::updateProgress(int current, int total, const QString &message)
     progressBar_->setRange(0, total);
     progressBar_->setValue(current);
     statusLabel_->setText(QStringLiteral("%1/%2  ·  %3").arg(current).arg(total).arg(message));
+}
+
+void MainWindow::showCurrentPair(
+    const QString &visiblePath,
+    const QString &thermalPath,
+    const QString &method,
+    int current,
+    int total)
+{
+    updatePreview(visiblePath, thermalPath);
+    const QString position = QStringLiteral("%1/%2 · %3").arg(current).arg(total).arg(method);
+    visibleName_->setText(QStringLiteral("%1  |  %2")
+        .arg(QFileInfo(visiblePath).fileName(), position));
+    thermalName_->setText(QStringLiteral("%1  |  %2")
+        .arg(QFileInfo(thermalPath).fileName(), position));
 }
 
 void MainWindow::showResult(const BenchmarkResult &result)

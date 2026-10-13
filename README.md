@@ -12,6 +12,7 @@
 - Giao diện bàn làm việc tối theo luồng của Test-EGM-Det: cấu hình bên trái, xem trước RGB/IR và kết quả bên phải.
 - Mở thư mục gốc, mở riêng từng ảnh, hoặc kéo‑thả ảnh/thư mục vào hai vùng RGB và IR.
 - Hỗ trợ JPG, JPEG, PNG, BMP, TIFF/TIF; hiển thị ngay cặp ảnh đầu tiên trước khi chạy.
+- Khi benchmark chạy, vùng xem trước tự chuyển sang đúng cặp RGB/IR đang xử lý và hiển thị matcher cùng tiến độ hiện tại.
 - Tự nhận dạng cấu trúc LLVIP và RoadScene.
 - Toàn bộ nút bấm và giao diện dùng bảng màu đơn sắc trắng–đen–xám.
 - Benchmark chạy trong `QThread`, không làm treo giao diện; hỗ trợ dừng sau cặp hiện tại.
@@ -136,10 +137,10 @@ RoadScene/
 5. Bấm **CHẠY BENCHMARK**.
 6. Xem bảng kết quả, bấm **MỞ BÁO CÁO HTML** hoặc **MỞ THƯ MỤC KẾT QUẢ**.
 
-Mỗi lần chạy được lưu tại:
+Mỗi lần chạy được lưu trong thư mục dữ liệu ứng dụng của hệ điều hành. Trên macOS:
 
 ```text
-runs/YYYYMMDD-HHMMSS/
+~/Library/Application Support/soncris3012/RGB–TIR Match Bench/runs/YYYYMMDD-HHMMSS/
 ├── per_pair.csv
 ├── summary.csv
 ├── results.json

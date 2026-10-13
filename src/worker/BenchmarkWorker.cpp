@@ -17,7 +17,11 @@ void BenchmarkWorker::run()
             [this](int current, int total, const QString &message) {
                 emit progress(current, total, message);
             },
-            &cancelled_);
+            &cancelled_,
+            [this](const ImagePair &pair, const QString &method, int current, int total) {
+                emit pairStarted(
+                    pair.visiblePath, pair.thermalPath, method, current, total);
+            });
         emit completed(result);
     } catch (const std::exception &error) {
         emit failed(QString::fromUtf8(error.what()));

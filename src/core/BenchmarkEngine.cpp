@@ -19,7 +19,8 @@ namespace rgbtir {
 BenchmarkResult BenchmarkEngine::run(
     const BenchmarkConfig &config,
     const ProgressCallback &progress,
-    const std::atomic_bool *cancelled)
+    const std::atomic_bool *cancelled,
+    const PairStartedCallback &pairStarted)
 {
     BenchmarkResult result;
     QVector<ImagePair> pairs = DatasetPairer::pairDirectories(
@@ -44,6 +45,8 @@ BenchmarkResult BenchmarkEngine::run(
         for (const ImagePair &pair : pairs) {
             if (cancelled && cancelled->load())
                 throw std::runtime_error("Đã dừng theo yêu cầu.");
+            if (pairStarted)
+                pairStarted(pair, method, current + 1, total);
 
             PairResult row;
             row.method = method;

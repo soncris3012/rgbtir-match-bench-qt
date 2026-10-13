@@ -166,8 +166,20 @@ void TestCore::runsSiftAndWritesReports()
     config.outputDir = temporary.filePath(QStringLiteral("runs"));
     config.methods = rgbtir::FeatureMatcherFactory::availableMethods();
     config.maxPairs = 1;
-    const rgbtir::BenchmarkResult result = rgbtir::BenchmarkEngine::run(config);
+    int previewEvents = 0;
+    const rgbtir::BenchmarkResult result = rgbtir::BenchmarkEngine::run(
+        config,
+        {},
+        nullptr,
+        [&](const rgbtir::ImagePair &pair, const QString &, int current, int total) {
+            ++previewEvents;
+            QCOMPARE(pair.visiblePath, QDir::cleanPath(visiblePath));
+            QCOMPARE(pair.thermalPath, QDir::cleanPath(thermalPath));
+            QVERIFY(current >= 1);
+            QCOMPARE(total, 4);
+        });
     QCOMPARE(result.summary.size(), 4);
+    QCOMPARE(previewEvents, 4);
     QVERIFY(QFileInfo::exists(result.runDirectory + QStringLiteral("/summary.csv")));
     QVERIFY(QFileInfo::exists(result.runDirectory + QStringLiteral("/report.html")));
 }

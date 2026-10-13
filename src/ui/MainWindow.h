@@ -32,6 +32,12 @@ private slots:
     void startBenchmark();
     void stopBenchmark();
     void updateProgress(int current, int total, const QString &message);
+    void showCurrentPair(
+        const QString &visiblePath,
+        const QString &thermalPath,
+        const QString &method,
+        int current,
+        int total);
     void showResult(const rgbtir::BenchmarkResult &result);
     void showFailure(const QString &message);
     void openReport();
