@@ -51,7 +51,10 @@ private:
     QStringList selectedMethods() const;
     void setRunning(bool running);
     void setDatasetInputs(const QString &visible, const QString &thermal, const QString &name);
-    void updatePreview(const QString &visiblePath, const QString &thermalPath);
+    void updatePreview(
+        const QString &visiblePath,
+        const QString &thermalPath,
+        const QString &statusSuffix = {});
 
     QLineEdit *datasetRoot_ = nullptr;
     DropZone *visibleDrop_ = nullptr;

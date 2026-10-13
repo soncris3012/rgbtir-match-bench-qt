@@ -2,114 +2,551 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry"><rect><x>0</x><y>0</y><width>1380</width><height>860</height></rect></property>
-  <property name="minimumSize"><size><width>1080</width><height>720</height></size></property>
-  <property name="windowTitle"><string>RGB–TIR Match Bench — Qt/C++</string></property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1380</width>
+    <height>860</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1080</width>
+    <height>720</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>RGB–TIR Match Bench — Qt/C++</string>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="outerLayout">
-    <property name="spacing"><number>8</number></property>
-    <property name="leftMargin"><number>8</number></property><property name="topMargin"><number>8</number></property>
-    <property name="rightMargin"><number>8</number></property><property name="bottomMargin"><number>8</number></property>
-    <item><layout class="QHBoxLayout" name="headerLayout">
-     <item><layout class="QVBoxLayout" name="titleLayout">
-      <item><widget class="QLabel" name="appTitle"><property name="text"><string>RGB–TIR MATCH BENCH</string></property></widget></item>
-      <item><widget class="QLabel" name="subtitle"><property name="text"><string>C++17 · Qt 6 · OpenCV  |  LLVIP · RoadScene · ảnh ghép tùy chọn</string></property></widget></item>
-     </layout></item>
-     <item><widget class="QLabel" name="datasetTypeLabel"><property name="text"><string>DATASET: CHƯA CHỌN</string></property></widget></item>
-    </layout></item>
-    <item><widget class="QSplitter" name="mainSplitter">
-     <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
-     <property name="childrenCollapsible"><bool>false</bool></property>
-     <widget class="QWidget" name="leftPanel">
-      <property name="minimumSize"><size><width>350</width><height>0</height></size></property>
-      <property name="maximumSize"><size><width>390</width><height>16777215</height></size></property>
-      <layout class="QVBoxLayout" name="leftLayout">
-       <property name="spacing"><number>8</number></property>
-       <property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property>
-       <property name="rightMargin"><number>8</number></property><property name="bottomMargin"><number>0</number></property>
-       <item><widget class="QGroupBox" name="dataGroup"><property name="title"><string>Dữ liệu đầu vào</string></property>
-        <layout class="QVBoxLayout" name="dataLayout">
-         <item><layout class="QHBoxLayout" name="datasetRootLayout">
-          <item><widget class="QLineEdit" name="datasetRootEdit"><property name="placeholderText"><string>Thư mục gốc LLVIP / RoadScene</string></property></widget></item>
-          <item><widget class="QPushButton" name="datasetRootButton"><property name="text"><string>MỞ…</string></property></widget></item>
-         </layout></item>
-         <item><widget class="rgbtir::DropZone" name="visibleDrop">
-          <layout class="QVBoxLayout" name="visibleDropLayout">
-           <item><widget class="QLabel" name="visibleDropTitle"><property name="text"><string>RGB / VISIBLE</string></property></widget></item>
-           <item><widget class="QLabel" name="visibleDropValue"><property name="text"><string>Chưa chọn ảnh hoặc thư mục</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
-           <item><widget class="QLabel" name="visibleDropCaption"><property name="text"><string>KÉO ẢNH HOẶC THƯ MỤC VÀO ĐÂY</string></property></widget></item>
-           <item><layout class="QHBoxLayout" name="visibleDropButtons">
-            <item><widget class="QPushButton" name="visibleImageButton"><property name="text"><string>MỞ ẢNH…</string></property></widget></item>
-            <item><widget class="QPushButton" name="visibleDirectoryButton"><property name="text"><string>MỞ THƯ MỤC…</string></property></widget></item>
-           </layout></item>
+    <property name="spacing">
+     <number>8</number>
+    </property>
+    <property name="leftMargin">
+     <number>8</number>
+    </property>
+    <property name="topMargin">
+     <number>8</number>
+    </property>
+    <property name="rightMargin">
+     <number>8</number>
+    </property>
+    <property name="bottomMargin">
+     <number>8</number>
+    </property>
+    <item>
+     <layout class="QHBoxLayout" name="headerLayout">
+      <item>
+       <layout class="QVBoxLayout" name="titleLayout">
+        <item>
+         <widget class="QLabel" name="appTitle">
+          <property name="text">
+           <string>RGB–TIR MATCH BENCH</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="subtitle">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="datasetTypeLabel">
+        <property name="text">
+         <string>DATASET: CHƯA CHỌN</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QSplitter" name="mainSplitter">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <property name="childrenCollapsible">
+       <bool>false</bool>
+      </property>
+      <widget class="QWidget" name="leftPanel">
+       <property name="minimumSize">
+        <size>
+         <width>350</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>390</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <layout class="QVBoxLayout" name="leftLayout">
+        <property name="spacing">
+         <number>8</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>8</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QGroupBox" name="dataGroup">
+          <property name="title">
+           <string>Dữ liệu đầu vào</string>
+          </property>
+          <layout class="QVBoxLayout" name="dataLayout">
+           <item>
+            <layout class="QHBoxLayout" name="datasetRootLayout">
+             <item>
+              <widget class="QLineEdit" name="datasetRootEdit">
+               <property name="placeholderText">
+                <string>Thư mục gốc LLVIP / RoadScene</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="datasetRootButton">
+               <property name="text">
+                <string>MỞ…</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="rgbtir::DropZone" name="visibleDrop">
+             <layout class="QVBoxLayout" name="visibleDropLayout">
+              <item>
+               <widget class="QLabel" name="visibleDropTitle">
+                <property name="text">
+                 <string>RGB / VISIBLE</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="visibleDropValue">
+                <property name="text">
+                 <string>Chưa chọn ảnh hoặc thư mục</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="visibleDropCaption">
+                <property name="text">
+                 <string>KÉO ẢNH HOẶC THƯ MỤC VÀO ĐÂY</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="visibleDropButtons">
+                <item>
+                 <widget class="QPushButton" name="visibleImageButton">
+                  <property name="text">
+                   <string>MỞ ẢNH…</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="visibleDirectoryButton">
+                  <property name="text">
+                   <string>MỞ THƯ MỤC…</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="rgbtir::DropZone" name="thermalDrop">
+             <layout class="QVBoxLayout" name="thermalDropLayout">
+              <item>
+               <widget class="QLabel" name="thermalDropTitle">
+                <property name="text">
+                 <string>THERMAL / IR</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="thermalDropValue">
+                <property name="text">
+                 <string>Chưa chọn ảnh hoặc thư mục</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="thermalDropCaption">
+                <property name="text">
+                 <string>KÉO ẢNH HOẶC THƯ MỤC VÀO ĐÂY</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="thermalDropButtons">
+                <item>
+                 <widget class="QPushButton" name="thermalImageButton">
+                  <property name="text">
+                   <string>MỞ ẢNH…</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="thermalDirectoryButton">
+                  <property name="text">
+                   <string>MỞ THƯ MỤC…</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="datasetStatusLabel">
+             <property name="text">
+              <string>Mở thư mục gốc, mở từng ảnh, hoặc kéo-thả trực tiếp.</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
           </layout>
-         </widget></item>
-         <item><widget class="rgbtir::DropZone" name="thermalDrop">
-          <layout class="QVBoxLayout" name="thermalDropLayout">
-           <item><widget class="QLabel" name="thermalDropTitle"><property name="text"><string>THERMAL / IR</string></property></widget></item>
-           <item><widget class="QLabel" name="thermalDropValue"><property name="text"><string>Chưa chọn ảnh hoặc thư mục</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
-           <item><widget class="QLabel" name="thermalDropCaption"><property name="text"><string>KÉO ẢNH HOẶC THƯ MỤC VÀO ĐÂY</string></property></widget></item>
-           <item><layout class="QHBoxLayout" name="thermalDropButtons">
-            <item><widget class="QPushButton" name="thermalImageButton"><property name="text"><string>MỞ ẢNH…</string></property></widget></item>
-            <item><widget class="QPushButton" name="thermalDirectoryButton"><property name="text"><string>MỞ THƯ MỤC…</string></property></widget></item>
-           </layout></item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="methodGroup">
+          <property name="title">
+           <string>Phương pháp</string>
+          </property>
+          <layout class="QVBoxLayout" name="methodLayout">
+           <item>
+            <widget class="QListWidget" name="methodList"/>
+           </item>
           </layout>
-         </widget></item>
-         <item><widget class="QLabel" name="datasetStatusLabel"><property name="text"><string>Mở thư mục gốc, mở từng ảnh, hoặc kéo-thả trực tiếp.</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
-        </layout>
-       </widget></item>
-       <item><widget class="QGroupBox" name="methodGroup"><property name="title"><string>Phương pháp</string></property>
-        <layout class="QVBoxLayout" name="methodLayout"><item><widget class="QListWidget" name="methodList"/></item></layout>
-       </widget></item>
-       <item><widget class="QGroupBox" name="parameterGroup"><property name="title"><string>Tham số benchmark</string></property>
-        <layout class="QFormLayout" name="parameterLayout">
-         <item row="0" column="0"><widget class="QLabel" name="maxPairsLabel"><property name="text"><string>Số cặp tối đa</string></property></widget></item>
-         <item row="0" column="1"><widget class="QSpinBox" name="maxPairsSpin"><property name="maximum"><number>100000</number></property><property name="value"><number>100</number></property></widget></item>
-         <item row="1" column="0"><widget class="QLabel" name="correctnessLabel"><property name="text"><string>Ngưỡng đúng</string></property></widget></item>
-         <item row="1" column="1"><widget class="QDoubleSpinBox" name="correctnessSpin"><property name="minimum"><double>0.1</double></property><property name="maximum"><double>50</double></property><property name="value"><double>5</double></property><property name="suffix"><string> px</string></property></widget></item>
-         <item row="2" column="0"><widget class="QLabel" name="ransacLabel"><property name="text"><string>RANSAC</string></property></widget></item>
-         <item row="2" column="1"><widget class="QDoubleSpinBox" name="ransacSpin"><property name="minimum"><double>0.1</double></property><property name="maximum"><double>50</double></property><property name="value"><double>3</double></property><property name="suffix"><string> px</string></property></widget></item>
-         <item row="3" column="0"><widget class="QLabel" name="maxKeypointsLabel"><property name="text"><string>Keypoint tối đa</string></property></widget></item>
-         <item row="3" column="1"><widget class="QSpinBox" name="maxKeypointsSpin"><property name="minimum"><number>128</number></property><property name="maximum"><number>16384</number></property><property name="singleStep"><number>128</number></property><property name="value"><number>2048</number></property></widget></item>
-        </layout>
-       </widget></item>
-       <item><layout class="QHBoxLayout" name="runLayout">
-        <item><widget class="QPushButton" name="runButton"><property name="text"><string>CHẠY BENCHMARK</string></property></widget></item>
-        <item><widget class="QPushButton" name="stopButton"><property name="enabled"><bool>false</bool></property><property name="text"><string>DỪNG</string></property></widget></item>
-       </layout></item>
-      </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="parameterGroup">
+          <property name="title">
+           <string>Tham số benchmark</string>
+          </property>
+          <layout class="QFormLayout" name="parameterLayout">
+           <item row="0" column="0">
+            <widget class="QLabel" name="maxPairsLabel">
+             <property name="text">
+              <string>Số cặp tối đa</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSpinBox" name="maxPairsSpin">
+             <property name="maximum">
+              <number>100000</number>
+             </property>
+             <property name="value">
+              <number>100</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="correctnessLabel">
+             <property name="text">
+              <string>Ngưỡng đúng</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="correctnessSpin">
+             <property name="suffix">
+              <string> px</string>
+             </property>
+             <property name="minimum">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>50.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>5.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="ransacLabel">
+             <property name="text">
+              <string>RANSAC</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QDoubleSpinBox" name="ransacSpin">
+             <property name="suffix">
+              <string> px</string>
+             </property>
+             <property name="minimum">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>50.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>3.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="maxKeypointsLabel">
+             <property name="text">
+              <string>Keypoint tối đa</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="maxKeypointsSpin">
+             <property name="minimum">
+              <number>128</number>
+             </property>
+             <property name="maximum">
+              <number>16384</number>
+             </property>
+             <property name="singleStep">
+              <number>128</number>
+             </property>
+             <property name="value">
+              <number>2048</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="runLayout">
+          <item>
+           <widget class="QPushButton" name="runButton">
+            <property name="text">
+             <string>CHẠY BENCHMARK</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="stopButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>DỪNG</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="rightPanel">
+       <layout class="QVBoxLayout" name="rightLayout">
+        <property name="spacing">
+         <number>8</number>
+        </property>
+        <property name="leftMargin">
+         <number>8</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QGroupBox" name="previewGroup">
+          <property name="title">
+           <string>Xem trước cặp ảnh</string>
+          </property>
+          <layout class="QGridLayout" name="previewLayout">
+           <item row="0" column="0">
+            <widget class="QLabel" name="visibleNameLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>RGB / Visible</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="thermalNameLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Thermal / IR</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="visiblePreviewLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>210</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Chưa có ảnh</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="thermalPreviewLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>210</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Chưa có ảnh</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="resultGroup">
+          <property name="title">
+           <string>Kết quả tổng hợp</string>
+          </property>
+          <layout class="QVBoxLayout" name="resultLayout">
+           <item>
+            <widget class="QTableWidget" name="resultTable"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QProgressBar" name="progressBar">
+          <property name="maximum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="textVisible">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="statusLabel">
+          <property name="text">
+           <string>Sẵn sàng</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="resultButtonsLayout">
+          <item>
+           <widget class="QPushButton" name="openReportButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>MỞ BÁO CÁO HTML</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="openRunDirectoryButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>MỞ THƯ MỤC KẾT QUẢ</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="resultButtonsSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
-     <widget class="QWidget" name="rightPanel">
-      <layout class="QVBoxLayout" name="rightLayout">
-       <property name="spacing"><number>8</number></property>
-       <property name="leftMargin"><number>8</number></property><property name="topMargin"><number>0</number></property>
-       <property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property>
-       <item><widget class="QGroupBox" name="previewGroup"><property name="title"><string>Xem trước cặp ảnh</string></property>
-        <layout class="QGridLayout" name="previewLayout">
-         <item row="0" column="0"><widget class="QLabel" name="visibleNameLabel"><property name="text"><string>RGB / Visible</string></property></widget></item>
-         <item row="0" column="1"><widget class="QLabel" name="thermalNameLabel"><property name="text"><string>Thermal / IR</string></property></widget></item>
-         <item row="1" column="0"><widget class="QLabel" name="visiblePreviewLabel"><property name="minimumSize"><size><width>0</width><height>210</height></size></property><property name="text"><string>Chưa có ảnh</string></property><property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property></widget></item>
-         <item row="1" column="1"><widget class="QLabel" name="thermalPreviewLabel"><property name="minimumSize"><size><width>0</width><height>210</height></size></property><property name="text"><string>Chưa có ảnh</string></property><property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property></widget></item>
-        </layout>
-       </widget></item>
-       <item><widget class="QGroupBox" name="resultGroup"><property name="title"><string>Kết quả tổng hợp</string></property>
-        <layout class="QVBoxLayout" name="resultLayout"><item><widget class="QTableWidget" name="resultTable"/></item></layout>
-       </widget></item>
-       <item><widget class="QProgressBar" name="progressBar"><property name="maximum"><number>1</number></property><property name="value"><number>0</number></property><property name="textVisible"><bool>false</bool></property></widget></item>
-       <item><widget class="QLabel" name="statusLabel"><property name="text"><string>Sẵn sàng</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
-       <item><layout class="QHBoxLayout" name="resultButtonsLayout">
-        <item><widget class="QPushButton" name="openReportButton"><property name="enabled"><bool>false</bool></property><property name="text"><string>MỞ BÁO CÁO HTML</string></property></widget></item>
-        <item><widget class="QPushButton" name="openRunDirectoryButton"><property name="enabled"><bool>false</bool></property><property name="text"><string>MỞ THƯ MỤC KẾT QUẢ</string></property></widget></item>
-        <item><spacer name="resultButtonsSpacer"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
-       </layout></item>
-      </layout>
-     </widget>
-    </widget></item>
+    </item>
    </layout>
   </widget>
  </widget>
  <customwidgets>
-  <customwidget><class>rgbtir::DropZone</class><extends>QFrame</extends><header>ui/DropZone.h</header><container>1</container></customwidget>
+  <customwidget>
+   <class>rgbtir::DropZone</class>
+   <extends>QFrame</extends>
+   <header>ui/DropZone.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections/>

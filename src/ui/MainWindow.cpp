@@ -90,6 +90,15 @@ void MainWindow::buildUi()
     datasetType_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     datasetType_->setAlignment(Qt::AlignCenter);
     ui_->headerLayout->setStretch(0, 1);
+    for (QLabel *preview : {visiblePreview_, thermalPreview_}) {
+        preview->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+        preview->setMinimumSize(0, 210);
+        preview->setScaledContents(false);
+    }
+    for (QLabel *name : {visibleName_, thermalName_}) {
+        name->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+        name->setMinimumWidth(0);
+    }
     datasetStatus_->setObjectName(QStringLiteral("datasetStatus"));
     visibleName_->setObjectName(QStringLiteral("previewName"));
     thermalName_->setObjectName(QStringLiteral("previewName"));
@@ -258,18 +267,22 @@ void MainWindow::validateDataset()
     }
 }
 
-void MainWindow::updatePreview(const QString &visiblePath, const QString &thermalPath)
+void MainWindow::updatePreview(
+    const QString &visiblePath,
+    const QString &thermalPath,
+    const QString &statusSuffix)
 {
-    const auto setImage = [](QLabel *view, QLabel *name, const QString &path) {
+    ui_->previewGroup->setUpdatesEnabled(false);
+    const auto setImage = [&statusSuffix](QLabel *view, QLabel *name, const QString &path) {
         const QPixmap pixmap(path);
-        name->setText(QFileInfo(path).fileName());
+        name->setText(QFileInfo(path).fileName() + statusSuffix);
         name->setToolTip(path);
         if (pixmap.isNull()) {
             view->setPixmap(QPixmap());
             view->setText(QStringLiteral("Không đọc được ảnh"));
             return;
         }
-        QSize target = view->size();
+        QSize target = view->contentsRect().size();
         if (target.width() < 100 || target.height() < 100)
             target = QSize(560, 280);
         view->setText(QString());
@@ -279,6 +292,8 @@ void MainWindow::updatePreview(const QString &visiblePath, const QString &therma
     };
     setImage(visiblePreview_, visibleName_, visiblePath);
     setImage(thermalPreview_, thermalName_, thermalPath);
+    ui_->previewGroup->setUpdatesEnabled(true);
+    ui_->previewGroup->update();
 }
 
 QStringList MainWindow::selectedMethods() const
@@ -364,12 +379,8 @@ void MainWindow::showCurrentPair(
     int current,
     int total)
 {
-    updatePreview(visiblePath, thermalPath);
     const QString position = QStringLiteral("%1/%2 · %3").arg(current).arg(total).arg(method);
-    visibleName_->setText(QStringLiteral("%1  |  %2")
-        .arg(QFileInfo(visiblePath).fileName(), position));
-    thermalName_->setText(QStringLiteral("%1  |  %2")
-        .arg(QFileInfo(thermalPath).fileName(), position));
+    updatePreview(visiblePath, thermalPath, QStringLiteral("  |  ") + position);
 }
 
 void MainWindow::showResult(const BenchmarkResult &result)
