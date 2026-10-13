@@ -9,6 +9,7 @@
 ## Điểm chính
 
 - Giao diện Qt Widgets viết hoàn toàn bằng C++.
+- Bố cục nằm trong `src/ui/MainWindow.ui`, có thể mở bằng tab **Design** của Qt Creator và chỉnh bằng kéo-thả.
 - Giao diện bàn làm việc tối theo luồng của Test-EGM-Det: cấu hình bên trái, xem trước RGB/IR và kết quả bên phải.
 - Mở thư mục gốc, mở riêng từng ảnh, hoặc kéo‑thả ảnh/thư mục vào hai vùng RGB và IR.
 - Hỗ trợ JPG, JPEG, PNG, BMP, TIFF/TIF; hiển thị ngay cặp ảnh đầu tiên trước khi chạy.
@@ -163,6 +164,7 @@ src/
 │   └── ReportWriter.*
 ├── ui/
 │   ├── DropZone.*
+│   ├── MainWindow.ui
 │   └── MainWindow.*
 └── worker/
     └── BenchmarkWorker.*

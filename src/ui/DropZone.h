@@ -11,10 +11,14 @@ class DropZone final : public QFrame {
     Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
 
 public:
-    explicit DropZone(const QString &title, const QString &hint, QWidget *parent = nullptr);
+    explicit DropZone(QWidget *parent = nullptr);
 
     QString path() const { return path_; }
     void setPath(const QString &path);
+
+public slots:
+    void chooseImage();
+    void chooseDirectory();
 
 signals:
     void pathChanged(const QString &path);
@@ -26,11 +30,9 @@ protected:
 
 private:
     void setActive(bool active);
-    void chooseImage();
-    void chooseDirectory();
+    QLabel *valueLabel() const;
 
     QString path_;
-    QLabel *valueLabel_ = nullptr;
 };
 
 } // namespace rgbtir

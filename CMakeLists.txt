@@ -33,6 +33,7 @@ target_compile_definitions(rgbtir_core PUBLIC QT_NO_CAST_FROM_ASCII QT_NO_CAST_T
 
 add_executable(rgbtir-match-bench
     src/main.cpp
+    src/ui/MainWindow.ui
     src/ui/DropZone.cpp
     src/ui/MainWindow.cpp
     src/worker/BenchmarkWorker.cpp

@@ -14,6 +14,8 @@ class QSpinBox;
 class QTableWidget;
 class QThread;
 
+namespace Ui { class MainWindow; }
+
 namespace rgbtir {
 
 class BenchmarkWorker;
@@ -72,6 +74,7 @@ private:
     QProgressBar *progressBar_ = nullptr;
     QLabel *statusLabel_ = nullptr;
     QTableWidget *resultTable_ = nullptr;
+    Ui::MainWindow *ui_ = nullptr;
     QThread *workerThread_ = nullptr;
     BenchmarkWorker *worker_ = nullptr;
     QString datasetName_ = QStringLiteral("Auto");

@@ -5,55 +5,33 @@
 #include <QDropEvent>
 #include <QFileInfo>
 #include <QFileDialog>
-#include <QHBoxLayout>
 #include <QLabel>
 #include <QMimeData>
-#include <QPushButton>
 #include <QStyle>
 #include <QUrl>
-#include <QVBoxLayout>
 
 namespace rgbtir {
 
-DropZone::DropZone(const QString &title, const QString &hint, QWidget *parent)
+DropZone::DropZone(QWidget *parent)
     : QFrame(parent)
 {
     setAcceptDrops(true);
-    setObjectName(QStringLiteral("dropZone"));
+    setProperty("role", QStringLiteral("dropZone"));
     setProperty("active", false);
-
-    auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(18, 16, 18, 16);
-    layout->setSpacing(7);
-    auto *titleLabel = new QLabel(title, this);
-    titleLabel->setObjectName(QStringLiteral("dropTitle"));
-    valueLabel_ = new QLabel(hint, this);
-    valueLabel_->setObjectName(QStringLiteral("dropValue"));
-    valueLabel_->setWordWrap(true);
-    auto *caption = new QLabel(QStringLiteral("KÉO ẢNH HOẶC THƯ MỤC VÀO ĐÂY"), this);
-    caption->setObjectName(QStringLiteral("dropCaption"));
-    auto *buttons = new QHBoxLayout;
-    buttons->setSpacing(6);
-    auto *imageButton = new QPushButton(QStringLiteral("MỞ ẢNH…"), this);
-    auto *directoryButton = new QPushButton(QStringLiteral("MỞ THƯ MỤC…"), this);
-    imageButton->setObjectName(QStringLiteral("smallButton"));
-    directoryButton->setObjectName(QStringLiteral("smallButton"));
-    buttons->addWidget(imageButton);
-    buttons->addWidget(directoryButton);
-    layout->addWidget(titleLabel);
-    layout->addWidget(valueLabel_, 1);
-    layout->addWidget(caption);
-    layout->addLayout(buttons);
-    connect(imageButton, &QPushButton::clicked, this, &DropZone::chooseImage);
-    connect(directoryButton, &QPushButton::clicked, this, &DropZone::chooseDirectory);
 }
 
 void DropZone::setPath(const QString &path)
 {
     path_ = path.isEmpty() ? QString() : QDir::cleanPath(path);
-    valueLabel_->setText(path_.isEmpty() ? QStringLiteral("Chưa chọn thư mục") : path_);
+    if (QLabel *label = valueLabel())
+        label->setText(path_.isEmpty() ? QStringLiteral("Chưa chọn ảnh hoặc thư mục") : path_);
     setToolTip(path_);
     emit pathChanged(path_);
+}
+
+QLabel *DropZone::valueLabel() const
+{
+    return findChild<QLabel *>(QStringLiteral("dropValue"));
 }
 
 void DropZone::setActive(bool active)
