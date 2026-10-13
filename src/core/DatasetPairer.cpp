@@ -12,6 +12,15 @@ namespace rgbtir {
 
 QStringList DatasetPairer::imageFiles(const QString &directory)
 {
+    const QFileInfo input(directory);
+    const QStringList suffixes = {
+        QStringLiteral("jpg"), QStringLiteral("jpeg"), QStringLiteral("png"),
+        QStringLiteral("bmp"), QStringLiteral("tif"), QStringLiteral("tiff")};
+    if (input.isFile()) {
+        if (suffixes.contains(input.suffix().toLower()))
+            return {QDir::cleanPath(input.absoluteFilePath())};
+        return {};
+    }
     QStringList files;
     const QStringList filters = {
         QStringLiteral("*.jpg"), QStringLiteral("*.jpeg"), QStringLiteral("*.png"),
@@ -86,20 +95,48 @@ QVector<ImagePair> DatasetPairer::pairDirectories(
 bool DatasetPairer::detectDatasetRoot(
     const QString &root, QString *visibleDir, QString *thermalDir, QString *datasetName)
 {
+    QFileInfo input(root);
+    if (!input.exists())
+        return false;
+    QDir cursor(input.isDir() ? input.absoluteFilePath() : input.absolutePath());
+    QStringList roots;
+    for (int depth = 0; depth < 5; ++depth) {
+        if (!roots.contains(cursor.absolutePath()))
+            roots.append(cursor.absolutePath());
+        if (!cursor.cdUp())
+            break;
+    }
+
     struct Candidate { QString visible; QString thermal; QString name; };
-    const QDir base(root);
-    const QVector<Candidate> candidates = {
-        {base.filePath(QStringLiteral("visible")), base.filePath(QStringLiteral("infrared")), QStringLiteral("LLVIP")},
-        {base.filePath(QStringLiteral("LLVIP/visible")), base.filePath(QStringLiteral("LLVIP/infrared")), QStringLiteral("LLVIP")},
-        {base.filePath(QStringLiteral("crop_LR_visible")), base.filePath(QStringLiteral("cropinfrared")), QStringLiteral("RoadScene")},
-        {base.filePath(QStringLiteral("crop_HR_visible")), base.filePath(QStringLiteral("infrared")), QStringLiteral("RoadScene")},
-    };
-    for (const Candidate &candidate : candidates) {
-        if (QDir(candidate.visible).exists() && QDir(candidate.thermal).exists()) {
-            if (visibleDir) *visibleDir = QDir::cleanPath(candidate.visible);
-            if (thermalDir) *thermalDir = QDir::cleanPath(candidate.thermal);
-            if (datasetName) *datasetName = candidate.name;
-            return true;
+    for (const QString &rootPath : roots) {
+        const QStringList bases = {rootPath, QDir(rootPath).filePath(QStringLiteral("LLVIP"))};
+        for (const QString &basePath : bases) {
+            const QDir base(basePath);
+            QVector<Candidate> candidates = {
+                {base.filePath(QStringLiteral("visible")), base.filePath(QStringLiteral("infrared")), QStringLiteral("LLVIP")},
+                {base.filePath(QStringLiteral("crop_HR_visible")), base.filePath(QStringLiteral("cropinfrared")), QStringLiteral("RoadScene")},
+                {base.filePath(QStringLiteral("crop_LR_visible")), base.filePath(QStringLiteral("cropinfrared")), QStringLiteral("RoadScene")},
+                {base.filePath(QStringLiteral("rgb")), base.filePath(QStringLiteral("ir")), QStringLiteral("Custom")},
+                {base.filePath(QStringLiteral("images/rgb")), base.filePath(QStringLiteral("images/ir")), QStringLiteral("Custom")},
+            };
+            for (Candidate candidate : candidates) {
+                if (!QDir(candidate.visible).exists() || !QDir(candidate.thermal).exists())
+                    continue;
+                for (const QString &split : {QStringLiteral("test"), QStringLiteral("val"),
+                                             QStringLiteral("validation"), QStringLiteral("train")}) {
+                    const QString splitVisible = QDir(candidate.visible).filePath(split);
+                    const QString splitThermal = QDir(candidate.thermal).filePath(split);
+                    if (QDir(splitVisible).exists() && QDir(splitThermal).exists()) {
+                        candidate.visible = splitVisible;
+                        candidate.thermal = splitThermal;
+                        break;
+                    }
+                }
+                if (visibleDir) *visibleDir = QDir::cleanPath(candidate.visible);
+                if (thermalDir) *thermalDir = QDir::cleanPath(candidate.thermal);
+                if (datasetName) *datasetName = candidate.name;
+                return true;
+            }
         }
     }
     return false;

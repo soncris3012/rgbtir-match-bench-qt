@@ -8,19 +8,22 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QDoubleSpinBox>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QPushButton>
+#include <QPixmap>
 #include <QSpinBox>
 #include <QSplitter>
-#include <QStandardPaths>
 #include <QTableWidget>
 #include <QThread>
 #include <QUrl>
@@ -39,10 +42,13 @@ QString number(double value)
     return QString::number(value, 'f', 2);
 }
 
-QLabel *sectionLabel(const QString &numberText, const QString &title, QWidget *parent)
+QLabel *previewLabel(QWidget *parent)
 {
-    auto *label = new QLabel(QStringLiteral("%1  %2").arg(numberText, title), parent);
-    label->setObjectName(QStringLiteral("sectionLabel"));
+    auto *label = new QLabel(QStringLiteral("Chưa có ảnh"), parent);
+    label->setObjectName(QStringLiteral("imagePreview"));
+    label->setAlignment(Qt::AlignCenter);
+    label->setMinimumHeight(210);
+    label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     return label;
 }
 
@@ -67,59 +73,70 @@ MainWindow::~MainWindow()
 
 void MainWindow::buildUi()
 {
-    setWindowTitle(QStringLiteral("RGB–TIR Match Bench · C++"));
-    resize(1240, 800);
-    setMinimumSize(980, 680);
+    setWindowTitle(QStringLiteral("RGB–TIR Match Bench — Qt/C++"));
+    resize(1380, 860);
+    setMinimumSize(1080, 720);
 
     auto *central = new QWidget(this);
     setCentralWidget(central);
     auto *outer = new QVBoxLayout(central);
-    outer->setContentsMargins(24, 20, 24, 20);
+    outer->setContentsMargins(8, 8, 8, 8);
     outer->setSpacing(8);
 
+    auto *header = new QHBoxLayout;
+    auto *titleColumn = new QVBoxLayout;
     auto *title = new QLabel(QStringLiteral("RGB–TIR MATCH BENCH"), central);
     title->setObjectName(QStringLiteral("appTitle"));
     auto *subtitle = new QLabel(
-        QStringLiteral("C++17 · Qt 6 · OpenCV  |  Đánh giá ghép đặc trưng trên LLVIP và RoadScene"), central);
+        QStringLiteral("C++17 · Qt 6 · OpenCV  |  LLVIP · RoadScene · ảnh ghép tùy chọn"), central);
     subtitle->setObjectName(QStringLiteral("subtitle"));
-    outer->addWidget(title);
-    outer->addWidget(subtitle);
-
-    auto *rule = new QFrame(central);
-    rule->setFrameShape(QFrame::HLine);
-    rule->setObjectName(QStringLiteral("rule"));
-    outer->addWidget(rule);
+    titleColumn->addWidget(title);
+    titleColumn->addWidget(subtitle);
+    datasetType_ = new QLabel(QStringLiteral("DATASET: CHƯA CHỌN"), central);
+    datasetType_->setObjectName(QStringLiteral("datasetBadge"));
+    header->addLayout(titleColumn, 1);
+    header->addWidget(datasetType_, 0, Qt::AlignBottom);
+    outer->addLayout(header);
 
     auto *splitter = new QSplitter(Qt::Horizontal, central);
     splitter->setChildrenCollapsible(false);
     outer->addWidget(splitter, 1);
     auto *left = new QWidget(splitter);
+    left->setMinimumWidth(350);
+    left->setMaximumWidth(390);
     auto *right = new QWidget(splitter);
     splitter->addWidget(left);
     splitter->addWidget(right);
-    splitter->setSizes({470, 730});
+    splitter->setSizes({370, 990});
 
     auto *leftLayout = new QVBoxLayout(left);
-    leftLayout->setContentsMargins(0, 8, 12, 0);
-    leftLayout->setSpacing(10);
-    leftLayout->addWidget(sectionLabel(QStringLiteral("01"), QStringLiteral("DỮ LIỆU"), left));
+    leftLayout->setContentsMargins(0, 0, 8, 0);
+    leftLayout->setSpacing(8);
 
-    auto *dropLayout = new QHBoxLayout;
-    dropLayout->setSpacing(10);
-    visibleDrop_ = new DropZone(QStringLiteral("RGB / VISIBLE"), QStringLiteral("Thả thư mục ảnh RGB"), left);
-    thermalDrop_ = new DropZone(QStringLiteral("THERMAL / IR"), QStringLiteral("Thả thư mục ảnh nhiệt"), left);
-    dropLayout->addWidget(visibleDrop_);
-    dropLayout->addWidget(thermalDrop_);
-    leftLayout->addLayout(dropLayout);
-
+    auto *dataGroup = new QGroupBox(QStringLiteral("Dữ liệu đầu vào"), left);
+    auto *dataLayout = new QVBoxLayout(dataGroup);
+    auto *rootRow = new QHBoxLayout;
+    datasetRoot_ = new QLineEdit(dataGroup);
+    datasetRoot_->setPlaceholderText(QStringLiteral("Thư mục gốc LLVIP / RoadScene"));
+    auto *rootButton = new QPushButton(QStringLiteral("MỞ…"), dataGroup);
+    rootButton->setObjectName(QStringLiteral("smallButton"));
+    rootRow->addWidget(datasetRoot_, 1);
+    rootRow->addWidget(rootButton);
+    dataLayout->addLayout(rootRow);
+    visibleDrop_ = new DropZone(QStringLiteral("RGB / VISIBLE"), QStringLiteral("Chưa chọn ảnh hoặc thư mục"), dataGroup);
+    thermalDrop_ = new DropZone(QStringLiteral("THERMAL / IR"), QStringLiteral("Chưa chọn ảnh hoặc thư mục"), dataGroup);
+    dataLayout->addWidget(visibleDrop_);
+    dataLayout->addWidget(thermalDrop_);
     datasetStatus_ = new QLabel(
-        QStringLiteral("Thả riêng hai thư mục, hoặc thả thư mục gốc LLVIP/RoadScene vào một trong hai khung."), left);
+        QStringLiteral("Mở thư mục gốc, mở từng ảnh, hoặc kéo-thả trực tiếp."), dataGroup);
     datasetStatus_->setObjectName(QStringLiteral("datasetStatus"));
     datasetStatus_->setWordWrap(true);
-    leftLayout->addWidget(datasetStatus_);
+    dataLayout->addWidget(datasetStatus_);
+    leftLayout->addWidget(dataGroup);
 
-    leftLayout->addWidget(sectionLabel(QStringLiteral("02"), QStringLiteral("PHƯƠNG PHÁP"), left));
-    methodList_ = new QListWidget(left);
+    auto *methodGroup = new QGroupBox(QStringLiteral("Phương pháp"), left);
+    auto *methodLayout = new QVBoxLayout(methodGroup);
+    methodList_ = new QListWidget(methodGroup);
     methodList_->setObjectName(QStringLiteral("methodList"));
     methodList_->setSelectionMode(QAbstractItemView::NoSelection);
     const QStringList methods = FeatureMatcherFactory::availableMethods();
@@ -128,31 +145,24 @@ void MainWindow::buildUi()
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(i < 2 ? Qt::Checked : Qt::Unchecked);
     }
-    leftLayout->addWidget(methodList_, 1);
+    methodLayout->addWidget(methodList_);
+    leftLayout->addWidget(methodGroup, 1);
 
-    auto *matcherNote = new QLabel(
-        QStringLiteral("Không model, không trọng số. Gradient-SIFT và Laplacian-SIFT dùng cấu trúc ảnh để giảm ảnh hưởng khác biệt RGB–IR."), left);
-    matcherNote->setObjectName(QStringLiteral("note"));
-    matcherNote->setWordWrap(true);
-    leftLayout->addWidget(matcherNote);
-
-    leftLayout->addWidget(sectionLabel(QStringLiteral("03"), QStringLiteral("THIẾT LẬP"), left));
-    auto *settings = new QWidget(left);
-    auto *form = new QFormLayout(settings);
-    form->setContentsMargins(0, 0, 0, 0);
-    form->setHorizontalSpacing(20);
-    maxPairs_ = new QSpinBox(settings);
+    auto *parameterGroup = new QGroupBox(QStringLiteral("Tham số benchmark"), left);
+    auto *form = new QFormLayout(parameterGroup);
+    form->setHorizontalSpacing(14);
+    maxPairs_ = new QSpinBox(parameterGroup);
     maxPairs_->setRange(1, 100000);
     maxPairs_->setValue(100);
-    correctness_ = new QDoubleSpinBox(settings);
+    correctness_ = new QDoubleSpinBox(parameterGroup);
     correctness_->setRange(0.1, 50.0);
     correctness_->setValue(5.0);
     correctness_->setSuffix(QStringLiteral(" px"));
-    ransac_ = new QDoubleSpinBox(settings);
+    ransac_ = new QDoubleSpinBox(parameterGroup);
     ransac_->setRange(0.1, 50.0);
     ransac_->setValue(3.0);
     ransac_->setSuffix(QStringLiteral(" px"));
-    maxKeypoints_ = new QSpinBox(settings);
+    maxKeypoints_ = new QSpinBox(parameterGroup);
     maxKeypoints_->setRange(128, 16384);
     maxKeypoints_->setSingleStep(128);
     maxKeypoints_->setValue(2048);
@@ -160,7 +170,7 @@ void MainWindow::buildUi()
     form->addRow(QStringLiteral("Ngưỡng đúng"), correctness_);
     form->addRow(QStringLiteral("RANSAC"), ransac_);
     form->addRow(QStringLiteral("Keypoint tối đa"), maxKeypoints_);
-    leftLayout->addWidget(settings);
+    leftLayout->addWidget(parameterGroup);
 
     auto *buttonRow = new QHBoxLayout;
     runButton_ = new QPushButton(QStringLiteral("CHẠY BENCHMARK"), left);
@@ -173,9 +183,27 @@ void MainWindow::buildUi()
     leftLayout->addLayout(buttonRow);
 
     auto *rightLayout = new QVBoxLayout(right);
-    rightLayout->setContentsMargins(12, 8, 0, 0);
-    rightLayout->setSpacing(10);
-    rightLayout->addWidget(sectionLabel(QStringLiteral("04"), QStringLiteral("KẾT QUẢ TỔNG HỢP"), right));
+    rightLayout->setContentsMargins(8, 0, 0, 0);
+    rightLayout->setSpacing(8);
+
+    auto *previewGroup = new QGroupBox(QStringLiteral("Xem trước cặp ảnh"), right);
+    auto *previewLayout = new QGridLayout(previewGroup);
+    visibleName_ = new QLabel(QStringLiteral("RGB / Visible"), previewGroup);
+    thermalName_ = new QLabel(QStringLiteral("Thermal / IR"), previewGroup);
+    visibleName_->setObjectName(QStringLiteral("previewName"));
+    thermalName_->setObjectName(QStringLiteral("previewName"));
+    visiblePreview_ = previewLabel(previewGroup);
+    thermalPreview_ = previewLabel(previewGroup);
+    previewLayout->addWidget(visibleName_, 0, 0);
+    previewLayout->addWidget(thermalName_, 0, 1);
+    previewLayout->addWidget(visiblePreview_, 1, 0);
+    previewLayout->addWidget(thermalPreview_, 1, 1);
+    previewLayout->setColumnStretch(0, 1);
+    previewLayout->setColumnStretch(1, 1);
+    rightLayout->addWidget(previewGroup, 2);
+
+    auto *resultGroup = new QGroupBox(QStringLiteral("Kết quả tổng hợp"), right);
+    auto *resultLayout = new QVBoxLayout(resultGroup);
     resultTable_ = new QTableWidget(0, 8, right);
     resultTable_->setHorizontalHeaderLabels({
         QStringLiteral("METHOD"), QStringLiteral("PAIRS"), QStringLiteral("PRECISION"),
@@ -186,7 +214,8 @@ void MainWindow::buildUi()
     resultTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     resultTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     resultTable_->setAlternatingRowColors(true);
-    rightLayout->addWidget(resultTable_, 1);
+    resultLayout->addWidget(resultTable_);
+    rightLayout->addWidget(resultGroup, 2);
 
     progressBar_ = new QProgressBar(right);
     progressBar_->setRange(0, 1);
@@ -198,73 +227,159 @@ void MainWindow::buildUi()
     openReportButton_ = new QPushButton(QStringLiteral("MỞ BÁO CÁO HTML"), right);
     openReportButton_->setObjectName(QStringLiteral("outlineButton"));
     openReportButton_->setEnabled(false);
+    openRunDirectoryButton_ = new QPushButton(QStringLiteral("MỞ THƯ MỤC KẾT QUẢ"), right);
+    openRunDirectoryButton_->setObjectName(QStringLiteral("outlineButton"));
+    openRunDirectoryButton_->setEnabled(false);
+    auto *resultButtons = new QHBoxLayout;
+    resultButtons->addWidget(openReportButton_);
+    resultButtons->addWidget(openRunDirectoryButton_);
+    resultButtons->addStretch();
     rightLayout->addWidget(progressBar_);
     rightLayout->addWidget(statusLabel_);
-    rightLayout->addWidget(openReportButton_);
+    rightLayout->addLayout(resultButtons);
 
+    connect(rootButton, &QPushButton::clicked, this, &MainWindow::chooseDatasetRoot);
+    connect(datasetRoot_, &QLineEdit::editingFinished, this, [this] {
+        if (!datasetRoot_->text().trimmed().isEmpty()) {
+            visibleDrop_->setPath(datasetRoot_->text().trimmed());
+        }
+    });
     connect(visibleDrop_, &DropZone::pathChanged, this, &MainWindow::validateDataset);
     connect(thermalDrop_, &DropZone::pathChanged, this, &MainWindow::validateDataset);
     connect(runButton_, &QPushButton::clicked, this, &MainWindow::startBenchmark);
     connect(stopButton_, &QPushButton::clicked, this, &MainWindow::stopBenchmark);
     connect(openReportButton_, &QPushButton::clicked, this, &MainWindow::openReport);
+    connect(openRunDirectoryButton_, &QPushButton::clicked, this, &MainWindow::openRunDirectory);
 }
 
 void MainWindow::applyMonochromeStyle()
 {
     setStyleSheet(QStringLiteral(R"(
-        QMainWindow, QWidget { background:#f5f5f3; color:#111111; font-size:13px; }
-        #appTitle { font-size:27px; font-weight:800; letter-spacing:1px; }
-        #subtitle, #note, #datasetStatus, #statusLabel { color:#606060; }
-        #rule { color:#111111; background:#111111; max-height:1px; }
-        #sectionLabel { font-size:12px; font-weight:800; letter-spacing:1.5px; padding:7px 0 2px 0; }
-        #dropZone { background:#ffffff; border:2px dashed #858585; border-radius:0; min-height:138px; }
-        #dropZone:hover, #dropZone[active="true"] { border:2px solid #111111; background:#eeeeeb; }
-        #dropTitle { font-weight:800; font-size:13px; }
-        #dropValue { color:#555555; }
-        #dropCaption { color:#777777; font-size:10px; letter-spacing:0.8px; }
-        QPushButton { min-height:36px; padding:0 15px; border-radius:0; font-weight:700; letter-spacing:0.6px; }
-        #primaryButton { background:#111111; color:#ffffff; border:1px solid #111111; }
-        #primaryButton:hover { background:#333333; }
-        #secondaryButton, #outlineButton { background:#ffffff; color:#111111; border:1px solid #111111; }
-        #secondaryButton:hover, #outlineButton:hover { background:#e5e5e2; }
-        QPushButton:disabled { background:#e6e6e3; color:#9a9a9a; border:1px solid #c9c9c6; }
-        QListWidget, QTableWidget { background:#ffffff; border:1px solid #b8b8b5; alternate-background-color:#f2f2ef; }
-        QListWidget::item { padding:7px; border-bottom:1px solid #e1e1df; }
-        QHeaderView::section { background:#111111; color:#ffffff; border:0; padding:9px; font-size:11px; font-weight:800; }
-        QSpinBox, QDoubleSpinBox { min-height:31px; background:#ffffff; border:1px solid #9a9a98; padding:0 8px; }
-        QProgressBar { min-height:8px; max-height:8px; background:#ddddda; border:0; }
-        QProgressBar::chunk { background:#111111; }
-        QSplitter::handle { background:#c8c8c5; width:1px; }
+        * { color:#e2e2e2; font-size:13px; }
+        QMainWindow, QWidget { background:#2b2b2b; }
+        #appTitle { font-size:25px; font-weight:800; letter-spacing:1px; color:#ffffff; }
+        #subtitle, #datasetStatus, #statusLabel { color:#aaaaaa; }
+        #datasetBadge { background:#202020; border:1px solid #777777; padding:6px 10px; font-weight:700; }
+        QGroupBox { background:#303030; border:1px solid #707070; margin-top:10px; padding:9px 5px 5px 5px; font-weight:700; }
+        QGroupBox::title { subcontrol-origin:margin; left:7px; padding:0 4px; }
+        #dropZone { background:#242424; border:1px dashed #777777; min-height:122px; }
+        #dropZone:hover, #dropZone[active="true"] { border:1px solid #f0f0f0; background:#333333; }
+        #dropTitle, #previewName { font-weight:800; color:#f3f3f3; }
+        #dropValue { color:#bdbdbd; }
+        #dropCaption { color:#888888; font-size:10px; letter-spacing:0.6px; }
+        #imagePreview { background:#181818; border:1px solid #666666; color:#777777; }
+        QLineEdit, QSpinBox, QDoubleSpinBox { min-height:28px; background:#202020; border:1px solid #777777; padding:0 7px; }
+        QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus { border:1px solid #d0d0d0; }
+        QPushButton { min-height:32px; padding:0 12px; border:1px outset #888888; background:#444444; font-weight:700; }
+        QPushButton:pressed { border-style:inset; background:#333333; }
+        #smallButton { min-height:27px; padding:0 8px; font-size:11px; }
+        #primaryButton { background:#3b4c62; color:#ffffff; border:1px solid #8b9bb0; }
+        #primaryButton:hover { background:#485e79; }
+        #secondaryButton, #outlineButton { background:#3b3b3b; border:1px solid #888888; }
+        #secondaryButton:hover, #outlineButton:hover { background:#505050; }
+        QPushButton:disabled { color:#777777; background:#383838; border:1px solid #555555; }
+        QListWidget, QTableWidget { background:#252525; border:1px solid #707070; alternate-background-color:#2f2f2f; gridline-color:#555555; selection-background-color:#385478; }
+        QListWidget::item { padding:6px; border-bottom:1px solid #474747; }
+        QHeaderView::section { background:#444444; color:#f5f5f5; border:1px solid #606060; padding:6px; font-size:11px; font-weight:800; }
+        QProgressBar { min-height:16px; max-height:16px; background:#202020; border:1px solid #707070; }
+        QProgressBar::chunk { background:#4c76a8; }
+        QSplitter::handle { background:#5b5b5b; width:1px; }
     )"));
+}
+
+void MainWindow::chooseDatasetRoot()
+{
+    const QString root = QFileDialog::getExistingDirectory(
+        this,
+        QStringLiteral("Chọn thư mục gốc LLVIP / RoadScene"),
+        datasetRoot_->text());
+    if (root.isEmpty())
+        return;
+    datasetRoot_->setText(root);
+    QString visible;
+    QString thermal;
+    QString name;
+    if (DatasetPairer::detectDatasetRoot(root, &visible, &thermal, &name)) {
+        setDatasetInputs(visible, thermal, name);
+        validateDataset();
+    } else {
+        datasetStatus_->setText(QStringLiteral(
+            "Không nhận ra cấu trúc bộ dữ liệu. Hãy mở riêng thư mục/ảnh RGB và Thermal bên dưới."));
+        datasetType_->setText(QStringLiteral("DATASET: TÙY CHỌN"));
+    }
+}
+
+void MainWindow::setDatasetInputs(
+    const QString &visible, const QString &thermal, const QString &name)
+{
+    updatingInputs_ = true;
+    datasetName_ = name;
+    visibleDrop_->setPath(visible);
+    thermalDrop_->setPath(thermal);
+    datasetType_->setText(QStringLiteral("DATASET: %1").arg(name.toUpper()));
+    updatingInputs_ = false;
 }
 
 void MainWindow::validateDataset()
 {
+    if (updatingInputs_)
+        return;
     if (auto *zone = qobject_cast<DropZone *>(sender())) {
         QString detectedVisible;
         QString detectedThermal;
         QString detectedName;
         if (DatasetPairer::detectDatasetRoot(
                 zone->path(), &detectedVisible, &detectedThermal, &detectedName)) {
-            datasetName_ = detectedName;
-            if (visibleDrop_->path() != detectedVisible)
-                visibleDrop_->setPath(detectedVisible);
-            if (thermalDrop_->path() != detectedThermal)
-                thermalDrop_->setPath(detectedThermal);
-            return;
+            setDatasetInputs(detectedVisible, detectedThermal, detectedName);
         }
     }
-    if (visibleDrop_->path().isEmpty() || thermalDrop_->path().isEmpty()) return;
+    if (visibleDrop_->path().isEmpty() || thermalDrop_->path().isEmpty()) {
+        datasetStatus_->setText(QStringLiteral("Cần chọn đủ đầu vào RGB và Thermal / IR."));
+        return;
+    }
     try {
         QStringList warnings;
         const QVector<ImagePair> pairs = DatasetPairer::pairDirectories(
             visibleDrop_->path(), thermalDrop_->path(), &warnings);
-        datasetStatus_->setText(QStringLiteral("OK  ·  %1 cặp hợp lệ%2")
+        if (QFileInfo(visibleDrop_->path()).isFile() && QFileInfo(thermalDrop_->path()).isFile()) {
+            datasetName_ = QStringLiteral("Single pair");
+            datasetType_->setText(QStringLiteral("DATASET: CẶP ẢNH ĐƠN"));
+            maxPairs_->setValue(1);
+        } else if (datasetName_ == QStringLiteral("Auto")) {
+            datasetName_ = QStringLiteral("Custom");
+            datasetType_->setText(QStringLiteral("DATASET: TÙY CHỌN"));
+        }
+        datasetStatus_->setText(QStringLiteral("SẴN SÀNG  ·  %1 cặp hợp lệ%2")
             .arg(pairs.size())
             .arg(warnings.isEmpty() ? QString() : QStringLiteral("  ·  ") + warnings.join(QStringLiteral(" "))));
+        if (!pairs.isEmpty())
+            updatePreview(pairs.first().visiblePath, pairs.first().thermalPath);
     } catch (const std::exception &error) {
         datasetStatus_->setText(QStringLiteral("LỖI  ·  ") + QString::fromUtf8(error.what()));
     }
+}
+
+void MainWindow::updatePreview(const QString &visiblePath, const QString &thermalPath)
+{
+    const auto setImage = [](QLabel *view, QLabel *name, const QString &path) {
+        const QPixmap pixmap(path);
+        name->setText(QFileInfo(path).fileName());
+        name->setToolTip(path);
+        if (pixmap.isNull()) {
+            view->setPixmap(QPixmap());
+            view->setText(QStringLiteral("Không đọc được ảnh"));
+            return;
+        }
+        QSize target = view->size();
+        if (target.width() < 100 || target.height() < 100)
+            target = QSize(560, 280);
+        view->setText(QString());
+        view->setPixmap(pixmap.scaled(target, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        view->setToolTip(QStringLiteral("%1 × %2\n%3")
+            .arg(pixmap.width()).arg(pixmap.height()).arg(path));
+    };
+    setImage(visiblePreview_, visibleName_, visiblePath);
+    setImage(thermalPreview_, thermalName_, thermalPath);
 }
 
 QStringList MainWindow::selectedMethods() const
@@ -304,6 +419,7 @@ void MainWindow::startBenchmark()
     resultTable_->setRowCount(0);
     progressBar_->setValue(0);
     openReportButton_->setEnabled(false);
+    openRunDirectoryButton_->setEnabled(false);
     setRunning(true);
 
     workerThread_ = new QThread(this);
@@ -360,6 +476,7 @@ void MainWindow::showResult(const BenchmarkResult &result)
     }
     statusLabel_->setText(QStringLiteral("HOÀN TẤT  ·  ") + result.runDirectory);
     openReportButton_->setEnabled(true);
+    openRunDirectoryButton_->setEnabled(true);
 }
 
 void MainWindow::showFailure(const QString &message)
@@ -372,6 +489,12 @@ void MainWindow::openReport()
 {
     if (!lastRunDirectory_.isEmpty())
         QDesktopServices::openUrl(QUrl::fromLocalFile(lastRunDirectory_ + QStringLiteral("/report.html")));
+}
+
+void MainWindow::openRunDirectory()
+{
+    if (!lastRunDirectory_.isEmpty())
+        QDesktopServices::openUrl(QUrl::fromLocalFile(lastRunDirectory_));
 }
 
 void MainWindow::setRunning(bool running)

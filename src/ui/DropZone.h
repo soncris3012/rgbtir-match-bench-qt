@@ -26,6 +26,8 @@ protected:
 
 private:
     void setActive(bool active);
+    void chooseImage();
+    void chooseDirectory();
 
     QString path_;
     QLabel *valueLabel_ = nullptr;

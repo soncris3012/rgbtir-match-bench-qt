@@ -14,6 +14,9 @@ class TestCore final : public QObject {
 
 private slots:
     void pairsLlvipLayout();
+    void detectsLlvipFromNestedSplit();
+    void prefersRegisteredRoadScenePair();
+    void acceptsSingleImagePair();
     void fallsBackToSortedOrder();
     void identityMatchesAreCorrect();
     void normalizesDifferentResolutions();
@@ -69,6 +72,52 @@ void TestCore::fallsBackToSortedOrder()
         temporary.filePath(QStringLiteral("v")), temporary.filePath(QStringLiteral("t")), &warnings);
     QCOMPARE(pairs.size(), 1);
     QVERIFY(!warnings.isEmpty());
+}
+
+void TestCore::detectsLlvipFromNestedSplit()
+{
+    QTemporaryDir temporary;
+    const QString visibleFile = temporary.filePath(QStringLiteral("LLVIP/visible/test/190001.jpg"));
+    const QString thermalFile = temporary.filePath(QStringLiteral("LLVIP/infrared/test/190001.jpg"));
+    writeImage(visibleFile);
+    writeImage(thermalFile);
+    QString visible;
+    QString thermal;
+    QString name;
+    QVERIFY(rgbtir::DatasetPairer::detectDatasetRoot(
+        QFileInfo(visibleFile).path(), &visible, &thermal, &name));
+    QCOMPARE(name, QStringLiteral("LLVIP"));
+    QCOMPARE(QDir::cleanPath(visible), QDir::cleanPath(QFileInfo(visibleFile).path()));
+    QCOMPARE(QDir::cleanPath(thermal), QDir::cleanPath(QFileInfo(thermalFile).path()));
+}
+
+void TestCore::prefersRegisteredRoadScenePair()
+{
+    QTemporaryDir temporary;
+    writeImage(temporary.filePath(QStringLiteral("crop_HR_visible/1.png")));
+    writeImage(temporary.filePath(QStringLiteral("crop_LR_visible/1.png")));
+    writeImage(temporary.filePath(QStringLiteral("cropinfrared/1.png")));
+    QString visible;
+    QString thermal;
+    QString name;
+    QVERIFY(rgbtir::DatasetPairer::detectDatasetRoot(
+        temporary.path(), &visible, &thermal, &name));
+    QCOMPARE(name, QStringLiteral("RoadScene"));
+    QVERIFY(visible.endsWith(QStringLiteral("crop_HR_visible")));
+    QVERIFY(thermal.endsWith(QStringLiteral("cropinfrared")));
+}
+
+void TestCore::acceptsSingleImagePair()
+{
+    QTemporaryDir temporary;
+    const QString visible = temporary.filePath(QStringLiteral("rgb/sample.jpg"));
+    const QString thermal = temporary.filePath(QStringLiteral("ir/sample.png"));
+    writeImage(visible);
+    writeImage(thermal);
+    const auto pairs = rgbtir::DatasetPairer::pairDirectories(visible, thermal);
+    QCOMPARE(pairs.size(), 1);
+    QCOMPARE(pairs.first().visiblePath, QDir::cleanPath(visible));
+    QCOMPARE(pairs.first().thermalPath, QDir::cleanPath(thermal));
 }
 
 void TestCore::identityMatchesAreCorrect()

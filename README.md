@@ -9,7 +9,9 @@
 ## Điểm chính
 
 - Giao diện Qt Widgets viết hoàn toàn bằng C++.
-- Hai vùng kéo‑thả vuông cho thư mục RGB và IR; không có hộp chọn tệp chen vào quy trình.
+- Giao diện bàn làm việc tối theo luồng của Test-EGM-Det: cấu hình bên trái, xem trước RGB/IR và kết quả bên phải.
+- Mở thư mục gốc, mở riêng từng ảnh, hoặc kéo‑thả ảnh/thư mục vào hai vùng RGB và IR.
+- Hỗ trợ JPG, JPEG, PNG, BMP, TIFF/TIF; hiển thị ngay cặp ảnh đầu tiên trước khi chạy.
 - Tự nhận dạng cấu trúc LLVIP và RoadScene.
 - Toàn bộ nút bấm và giao diện dùng bảng màu đơn sắc trắng–đen–xám.
 - Benchmark chạy trong `QThread`, không làm treo giao diện; hỗ trợ dừng sau cặp hiện tại.
@@ -124,11 +126,15 @@ RoadScene/
 
 ## Sử dụng
 
-1. Kéo thư mục `visible` vào ô bên trái và `infrared` vào ô bên phải. Cũng có thể kéo cả thư mục gốc LLVIP/RoadScene vào một trong hai ô để ứng dụng tự nhận dạng.
-2. Chọn một hoặc nhiều matcher.
-3. Đặt số cặp tối đa, ngưỡng đúng, ngưỡng RANSAC và số keypoint.
-4. Bấm **CHẠY BENCHMARK**.
-5. Xem bảng kết quả hoặc bấm **MỞ BÁO CÁO HTML**.
+1. Chọn một trong ba cách nhập dữ liệu:
+   - bấm **MỞ…** để chọn thư mục gốc LLVIP/RoadScene;
+   - bấm **MỞ ẢNH…** hoặc **MỞ THƯ MỤC…** trong từng khung RGB và IR;
+   - kéo‑thả trực tiếp ảnh hoặc thư mục vào từng khung.
+2. Kiểm tra cặp ảnh đầu tiên trong vùng xem trước. Với LLVIP, chương trình ưu tiên `test`, rồi `val`, `validation`, `train`. Với RoadScene, chương trình dùng cặp đã căn chỉnh `crop_HR_visible` và `cropinfrared`.
+3. Chọn một hoặc nhiều matcher.
+4. Đặt số cặp tối đa, ngưỡng đúng, ngưỡng RANSAC và số keypoint.
+5. Bấm **CHẠY BENCHMARK**.
+6. Xem bảng kết quả, bấm **MỞ BÁO CÁO HTML** hoặc **MỞ THƯ MỤC KẾT QUẢ**.
 
 Mỗi lần chạy được lưu tại:
 
