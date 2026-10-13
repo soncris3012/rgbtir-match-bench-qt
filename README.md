@@ -1,87 +1,108 @@
-# RGB–TIR Match Bench (Qt)
+# RGB–TIR Match Bench — C++/Qt
 
-Ứng dụng desktop Qt để kiểm chứng khả năng ghép đặc trưng cục bộ giữa ảnh RGB và ảnh nhiệt trên **LLVIP** và **RoadScene**. Dự án được xây dựng theo hướng thực nghiệm của bài báo:
+Ứng dụng desktop **C++17 + Qt 6 Widgets + OpenCV** để đánh giá ghép đặc trưng giữa ảnh RGB và ảnh nhiệt trên LLVIP và RoadScene. Không dùng Python hoặc PySide ở runtime.
 
-> L. Morelli et al., “Evaluating Deep Learning Local Features for RGB-Thermal Image Matching and 3D InfraRed Thermography,” *Geomatics*, 6(4), 83, 2026. DOI: [10.3390/geomatics6040083](https://doi.org/10.3390/geomatics6040083).
+> L. Morelli et al., “Evaluating Deep Learning Local Features for RGB-Thermal Image Matching and 3D InfraRed Thermography,” *Geomatics*, 6(4), 83, 2026. [DOI 10.3390/geomatics6040083](https://doi.org/10.3390/geomatics6040083).
 
-Điểm cốt lõi được kiểm chứng là giả thuyết: mô hình ghép ảnh học sâu đã huấn luyện trên ảnh đơn phương thức vẫn có thể tổng quát hóa sang RGB–TIR mà không cần huấn luyện lại.
+![Giao diện đơn sắc C++/Qt](docs/gui.png)
 
-![Giao diện RGB–TIR Match Bench](docs/gui.png)
+## Điểm chính
 
-## Chức năng
-
-- Giao diện **PySide6 / Qt 6**, hỗ trợ kéo‑thả thư mục ảnh.
+- Giao diện Qt Widgets viết hoàn toàn bằng C++.
+- Hai vùng kéo‑thả lớn cho thư mục RGB và IR; cũng có thể bấm trực tiếp để chọn.
 - Tự nhận dạng cấu trúc LLVIP và RoadScene.
-- Ghép ảnh theo tên tệp; có cảnh báo rõ ràng nếu phải ghép theo thứ tự.
-- Benchmark nhiều phương pháp trong một lần chạy:
-  - SIFT + nearest-neighbor ratio test;
-  - ORB + nearest-neighbor ratio test;
-  - SuperPoint + LightGlue;
-  - DISK + LightGlue;
-  - ALIKED + LightGlue;
-  - LoFTR.
-- Chạy nền bằng `QThread`, giao diện không bị treo; có tiến độ và nút dừng.
-- Xuất `summary.csv`, `per_pair.csv`, `results.json` và `report.html`.
-- Chạy bằng GUI hoặc dòng lệnh; có test tự động và GitHub Actions.
+- Toàn bộ nút bấm và giao diện dùng bảng màu đơn sắc trắng–đen–xám.
+- Benchmark chạy trong `QThread`, không làm treo giao diện; hỗ trợ dừng sau cặp hiện tại.
+- Matcher C++ tích hợp: SIFT, ORB, AKAZE và BRISK.
+- Xuất `per_pair.csv`, `summary.csv`, `results.json` và `report.html`.
+- Unit test bằng Qt Test và CI GitHub Actions.
 
-## Phạm vi kiểm chứng và giới hạn khoa học
+SIFT là baseline thủ công chính được bài báo dùng để chỉ ra khó khăn của ghép RGB–TIR. ORB, AKAZE và BRISK được thêm làm nhóm đối chứng C++ nhẹ. Kiến trúc `IFeatureMatcher` cho phép tích hợp LightGlue/ONNX Runtime C++ sau này mà không sửa GUI, metric hoặc report.
 
-Bài báo đánh giá đầy đủ cả ghép điểm đa phổ, bundle adjustment và sai số 3D trên các check point được đo trắc địa ở mức milimet. LLVIP và RoadScene chỉ cung cấp các cặp RGB–IR đã căn chỉnh, không cung cấp đầy đủ nội suy camera, pose, tie tracks đa góc nhìn và check point 3D tương đương Thermitage.
+## Phạm vi khoa học
 
-Vì vậy dự án này đánh giá **đúng phần image matching 2D** của bài báo, không tuyên bố tái tạo nguyên xi RMSE 3D. Để tái lập phần 3D, cần dùng [Thermitage](https://github.com/3DOM-FBK/Thermitage) và pipeline SfM/bundle adjustment (ví dụ Deep-Image-Matching + COLMAP), cùng các check point khảo sát.
+Bài báo đánh giá hai tầng:
+
+1. chất lượng correspondence giữa ảnh RGB–TIR;
+2. bundle adjustment và RMSE 3D trên check point trắc địa milimet.
+
+LLVIP và RoadScene là dữ liệu cặp ảnh đã căn chỉnh nhưng không có đầy đủ pose camera, multi-view track và check point 3D tương đương Thermitage. Do đó chương trình này kiểm chứng **matching accuracy 2D**, không biến metric 2D thành RMSE 3D của bài báo.
 
 ## Metric
 
-Với cặp ảnh đã căn chỉnh, tọa độ đúng lý tưởng là cùng vị trí sau khi chuẩn hóa độ phân giải. Với mỗi match `(xᵢᴿᴳᴮ, xᵢᴵᴿ)`, sai số:
+Với ảnh đã căn chỉnh, tọa độ điểm nhiệt được chuẩn hóa về kích thước ảnh RGB:
 
 ```text
-eᵢ = ||xᵢᴿᴳᴮ − scale(xᵢᴵᴿ)||₂
+eᵢ = ||xᵢ_RGB − scale(xᵢ_IR)||₂
 ```
 
-- `Precision@τ`: tỷ lệ match có `eᵢ ≤ τ` (mặc định `τ = 5 px`).
-- `MMA@1/3/5/10`: Mean Matching Accuracy tại các ngưỡng pixel cố định.
-- `Mean / median / P95 error`: phân phối sai số căn chỉnh.
-- `Inlier ratio`: tỷ lệ inlier của homography RANSAC.
-- `Homography RMSE`: sai số của các inlier sau ước lượng homography.
-- `Coverage 4×4`: tỷ lệ ô không gian có match, tránh trường hợp match chỉ tập trung ở một vùng.
-- `Runtime`: thời gian suy luận mỗi cặp ảnh.
-
-Lưu ý: độ chính xác của kết quả phụ thuộc trực tiếp vào chất lượng registration gốc. Với LLVIP, một số cặp vẫn có thể còn lệch cục bộ; có thể tăng `τ` hoặc lọc riêng các cặp đó, nhưng phải giữ cùng cấu hình khi so sánh các phương pháp.
+- `Precision@τ`: tỷ lệ match có `eᵢ ≤ τ`, mặc định `τ = 5 px`.
+- `MMA@1/3/5/10`: Mean Matching Accuracy tại bốn ngưỡng pixel.
+- Mean, median và P95 reprojection error.
+- Homography RANSAC inlier ratio và inlier RMSE.
+- `Coverage 4×4`: tỷ lệ ô ảnh có ít nhất một match.
+- Thời gian xử lý trung bình theo cặp.
 
 ## Yêu cầu
 
-- Python 3.10–3.12 (khuyến nghị 3.11).
-- macOS, Linux hoặc Windows.
-- SIFT/ORB: CPU là đủ.
-- Các mô hình học sâu: PyTorch; NVIDIA CUDA được ưu tiên, Apple Silicon có thể dùng MPS. Lần chạy đầu cần Internet để tải trọng số chính thức.
+- Trình biên dịch hỗ trợ C++17: Apple Clang, GCC hoặc MSVC.
+- CMake 3.22 trở lên.
+- Qt 6.4 trở lên, module Widgets và Test.
+- OpenCV 4 trở lên với `features2d` và `calib3d`.
+- Ninja được khuyến nghị nhưng không bắt buộc.
 
-## Cài đặt
-
-### Bản đầy đủ
+## Build trên macOS
 
 ```bash
+brew install cmake ninja qt opencv
 git clone https://github.com/soncris3012/rgbtir-match-bench-qt.git
 cd rgbtir-match-bench-qt
-python3.11 -m venv .venv
-source .venv/bin/activate              # Windows: .venv\Scripts\activate
-python -m pip install --upgrade pip
-pip install -r requirements-deep.txt
+
+cmake --preset release \
+  -DCMAKE_PREFIX_PATH="$(brew --prefix qt)" \
+  -DOpenCV_DIR="$(brew --prefix opencv)/lib/cmake/opencv5"
+cmake --build --preset release
+ctest --preset release
+
+open build/release/rgbtir-match-bench.app
 ```
 
-### Chỉ SIFT/ORB, không cần PyTorch
+Nếu Homebrew cung cấp OpenCV 4, thay `opencv5` bằng `opencv4`.
+
+## Build trên Ubuntu/Debian
 
 ```bash
-pip install -r requirements.txt
+sudo apt update
+sudo apt install build-essential cmake ninja-build qt6-base-dev libopencv-dev
+
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+./build/rgbtir-match-bench
 ```
 
-## Chuẩn bị dữ liệu
+## Build trên Windows
 
-Không đưa dữ liệu vào Git vì kích thước lớn và điều khoản cấp phép. Hãy tải từ nguồn chính thức:
+Cài Qt 6, OpenCV và Visual Studio 2022, sau đó:
 
-- [LLVIP chính thức](https://github.com/bupt-ai-cz/LLVIP) — xem kỹ `Term of Use and License.md`; dữ liệu được công bố cho mục đích phi thương mại theo điều khoản của tác giả.
-- [RoadScene chính thức](https://github.com/hanna-xu/RoadScene) — 221 cặp visible/IR đã căn chỉnh.
+```powershell
+cmake -S . -B build -G "Visual Studio 17 2022" `
+  -DCMAKE_PREFIX_PATH="C:/Qt/6.8.0/msvc2022_64" `
+  -DOpenCV_DIR="C:/opencv/build"
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
+```
 
-Cấu trúc LLVIP được hỗ trợ:
+Chạy `windeployqt` để đóng gói DLL Qt trước khi chuyển ứng dụng sang máy khác.
+
+## Dữ liệu
+
+Tải dữ liệu từ nguồn chính thức và tuân thủ giấy phép riêng:
+
+- [LLVIP](https://github.com/bupt-ai-cz/LLVIP)
+- [RoadScene](https://github.com/hanna-xu/RoadScene)
+
+LLVIP:
 
 ```text
 LLVIP/
@@ -93,100 +114,73 @@ LLVIP/
     └── test/*.jpg
 ```
 
-Cấu trúc RoadScene được hỗ trợ:
+RoadScene:
 
 ```text
 RoadScene/
-├── crop_LR_visible/*
-└── cropinfrared/*
+├── crop_LR_visible/*.jpg
+└── cropinfrared/*.jpg
 ```
 
-Kiểm tra nhanh trước khi chạy:
+## Sử dụng
 
-```bash
-python scripts/check_dataset.py /duong/dan/LLVIP
-```
-
-## Chạy giao diện Qt
-
-```bash
-python -m rgbtir_bench
-# hoặc sau khi cài package:
-rgbtir-bench
-```
-
-Quy trình:
-
-1. Bấm **Nhận dạng thư mục gốc** hoặc kéo riêng hai thư mục `visible` và `infrared` vào hai vùng thả.
+1. Kéo thư mục `visible` vào ô bên trái và `infrared` vào ô bên phải; hoặc bấm **CHỌN THƯ MỤC GỐC**.
 2. Chọn một hoặc nhiều matcher.
-3. Chọn số cặp tối đa, ngưỡng pixel, số keypoint và thiết bị.
-4. Bấm **Chạy benchmark**.
-5. Xem bảng tổng hợp và mở báo cáo HTML. Mỗi lần chạy được lưu trong `runs/YYYYMMDD-HHMMSS/`.
+3. Đặt số cặp tối đa, ngưỡng đúng, ngưỡng RANSAC và số keypoint.
+4. Bấm **CHẠY BENCHMARK**.
+5. Xem bảng kết quả hoặc bấm **MỞ BÁO CÁO HTML**.
 
-Để so sánh công bằng, chương trình lấy cùng một mẫu cặp ảnh cho mọi matcher với seed cố định `42`.
-
-## Chạy dòng lệnh
-
-```bash
-rgbtir-bench \
-  --visible /data/LLVIP/visible/test \
-  --thermal /data/LLVIP/infrared/test \
-  --methods SIFT "SuperPoint + LightGlue" "ALIKED + LightGlue" LoFTR \
-  --max-pairs 500 \
-  --threshold 5 \
-  --device auto \
-  --output runs
-```
-
-Ví dụ RoadScene:
-
-```bash
-rgbtir-bench \
-  --visible /data/RoadScene/crop_LR_visible \
-  --thermal /data/RoadScene/cropinfrared \
-  --methods SIFT "SuperPoint + LightGlue" \
-  --max-pairs 221
-```
-
-## Đọc kết quả
+Mỗi lần chạy được lưu tại:
 
 ```text
-runs/20261013-103000/
-├── per_pair.csv   # metric của từng cặp và từng matcher
-├── summary.csv    # trung bình theo matcher
-├── results.json   # cấu hình + kết quả máy đọc được
-└── report.html    # báo cáo mở trực tiếp trong trình duyệt
+runs/YYYYMMDD-HHMMSS/
+├── per_pair.csv
+├── summary.csv
+├── results.json
+└── report.html
 ```
 
-Nên báo cáo ít nhất `Precision@5`, `MMA@3`, median error, inlier ratio, coverage và thời gian. Không chỉ chọn matcher có nhiều match nhất: số match lớn nhưng precision/coverage thấp có thể không đủ tin cậy cho SfM.
+Chương trình lấy cùng một tập cặp ảnh cho mọi matcher với seed cố định `42`, tránh so sánh trên các mẫu khác nhau.
+
+## Cấu trúc mã nguồn
+
+```text
+src/
+├── main.cpp
+├── core/
+│   ├── BenchmarkEngine.*
+│   ├── BenchmarkTypes.h
+│   ├── DatasetPairer.*
+│   ├── FeatureMatcher.*
+│   ├── MetricCalculator.*
+│   └── ReportWriter.*
+├── ui/
+│   ├── DropZone.*
+│   └── MainWindow.*
+└── worker/
+    └── BenchmarkWorker.*
+```
+
+## Thêm matcher C++ mới
+
+1. Tạo lớp kế thừa `IFeatureMatcher`.
+2. Trả về `MatchResult` gồm hai vector tọa độ tương ứng.
+3. Đăng ký tên và factory trong `FeatureMatcherFactory`.
+4. GUI, RANSAC, metric và report sẽ dùng matcher mới tự động.
+
+Để triển khai SuperPoint + LightGlue bằng C++, có thể kết nối ONNX Runtime với model xuất từ [LightGlue-ONNX](https://github.com/ct-hub/LightGlue-ONNX). Cần kiểm tra giấy phép riêng của pretrained weights, đặc biệt SuperPoint, trước khi phân phối.
 
 ## Kiểm thử
 
 ```bash
-pip install -e '.[test]'
-pytest
+cmake --preset release
+cmake --build --preset release
+ctest --preset release
 ```
 
-Test hiện có kiểm tra ghép cặp LLVIP, fallback theo thứ tự, metric identity và chuẩn hóa khi hai ảnh khác độ phân giải.
-
-## Xử lý lỗi thường gặp
-
-- **`Thiếu backend LightGlue/LoFTR`**: cài `requirements-deep.txt` trong Python 3.10–3.12.
-- **CUDA hết bộ nhớ**: giảm `Keypoint tối đa`, giảm số cặp, hoặc chọn `cpu`.
-- **MPS có toán tử chưa hỗ trợ**: chọn `cpu`; kết quả metric không đổi, chỉ chậm hơn.
-- **Không ghép được tên tệp**: kiểm tra hai modality có cùng basename. Fallback theo thứ tự chỉ an toàn khi thứ tự hai thư mục thực sự tương ứng.
-- **Precision thấp bất thường**: mở trực quan dữ liệu nguồn để kiểm tra residual misalignment; không điều chỉnh ngưỡng riêng cho từng matcher.
-- **Lần chạy đầu chậm**: các backend học sâu đang tải pretrained weights.
-
-## Liên hệ với bài báo
-
-Các backend SuperPoint, DISK, ALIKED, LightGlue và LoFTR bám sát nhóm thuật toán được bài báo thảo luận/thử nghiệm; SIFT là baseline thủ công đơn phương thức. Bài báo cũng khảo sát DeDoDe, SuperGlue, KeyNet+HardNet, RIFT2 và SRIF. Chúng chưa được bật mặc định ở bản đầu này vì API/trọng số phân tán hoặc phụ thuộc MATLAB; kiến trúc `matchers/registry.py` cho phép bổ sung backend mới mà không đổi GUI hay metric.
-
-## Trích dẫn dữ liệu
-
-Nếu dùng kết quả trong công bố, hãy trích dẫn bài báo gốc, LLVIP và RoadScene/FusionDN theo hướng dẫn trong repository chính thức của từng bộ dữ liệu.
+Test kiểm tra nhận dạng LLVIP, ghép cặp theo tên, fallback theo thứ tự, identity accuracy và chuẩn hóa khi hai modality khác kích thước.
 
 ## Giấy phép
 
-Mã nguồn dự án dùng giấy phép MIT. Trọng số mô hình và dữ liệu **không** thuộc giấy phép MIT này; chúng tuân theo giấy phép riêng của từng tác giả/nhà cung cấp.
+Mã nguồn dùng MIT License. Dữ liệu, OpenCV, Qt và pretrained model nếu được bổ sung có giấy phép riêng và không được bao gồm mặc định trong repository này.
 

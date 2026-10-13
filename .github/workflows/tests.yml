@@ -1,13 +1,22 @@
-name: tests
-on: [push, pull_request]
+name: C++ build and tests
+
+on:
+  push:
+  pull_request:
+
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: pip install -e '.[test]'
-      - run: pytest
+      - name: Install Qt and OpenCV
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build qt6-base-dev libopencv-dev
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+      - name: Build
+        run: cmake --build build --parallel 2
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
 
