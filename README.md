@@ -18,7 +18,7 @@
 - Toàn bộ nút bấm và giao diện dùng bảng màu đơn sắc trắng–đen–xám.
 - Benchmark chạy trong `QThread`, không làm treo giao diện; hỗ trợ dừng sau cặp hiện tại.
 - Matcher tích hợp sẵn trong binary: SIFT, Gradient-SIFT, Laplacian-SIFT và ORB.
-- Xuất `per_pair.csv`, `summary.csv`, `results.json` và `report.html`.
+- Xuất `per_pair.csv`, `summary.csv` và `results.json`.
 - Unit test bằng Qt Test và CI GitHub Actions.
 
 Không có model, checkpoint, ONNX hay trọng số phải nạp thêm. SIFT là baseline thủ công chính được bài báo dùng để chỉ ra khó khăn của ghép RGB–TIR. Gradient-SIFT và Laplacian-SIFT chuyển hai modality sang biểu diễn cấu trúc trước khi trích đặc trưng, nhờ đó tạo đối chứng không cần học máy; ORB là baseline nhị phân nhẹ.
@@ -136,7 +136,7 @@ RoadScene/
 3. Chọn một hoặc nhiều matcher.
 4. Đặt số cặp tối đa, ngưỡng đúng, ngưỡng RANSAC và số keypoint.
 5. Bấm **CHẠY BENCHMARK**.
-6. Xem bảng kết quả, bấm **MỞ BÁO CÁO HTML** hoặc **MỞ THƯ MỤC KẾT QUẢ**.
+6. Xem bảng kết quả hoặc bấm **MỞ THƯ MỤC KẾT QUẢ** để lấy CSV/JSON.
 
 Mỗi lần chạy được lưu trong thư mục dữ liệu ứng dụng của hệ điều hành. Trên macOS:
 
@@ -144,8 +144,7 @@ Mỗi lần chạy được lưu trong thư mục dữ liệu ứng dụng của
 ~/Library/Application Support/soncris3012/RGB–TIR Match Bench/runs/YYYYMMDD-HHMMSS/
 ├── per_pair.csv
 ├── summary.csv
-├── results.json
-└── report.html
+└── results.json
 ```
 
 Chương trình lấy cùng một tập cặp ảnh cho mọi matcher với seed cố định `42`, tránh so sánh trên các mẫu khác nhau.

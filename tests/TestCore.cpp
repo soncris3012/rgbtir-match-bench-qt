@@ -181,7 +181,7 @@ void TestCore::runsSiftAndWritesReports()
     QCOMPARE(result.summary.size(), 4);
     QCOMPARE(previewEvents, 4);
     QVERIFY(QFileInfo::exists(result.runDirectory + QStringLiteral("/summary.csv")));
-    QVERIFY(QFileInfo::exists(result.runDirectory + QStringLiteral("/report.html")));
+    QVERIFY(!QFileInfo::exists(result.runDirectory + QStringLiteral("/report.html")));
 }
 
 QTEST_APPLESS_MAIN(TestCore)

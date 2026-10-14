@@ -175,24 +175,6 @@ void ReportWriter::writeAll(
         {QStringLiteral("pairs"), pairArray},
     }).toJson(QJsonDocument::Indented));
 
-    QFile htmlFile(runDirectory + QStringLiteral("/report.html"));
-    openForWrite(htmlFile);
-    QTextStream html(&htmlFile);
-    html << "<!doctype html><html lang='vi'><meta charset='utf-8'><title>RGB–TIR Match Bench</title>"
-            "<style>body{font:15px system-ui;max-width:1100px;margin:40px auto;padding:0 20px;color:#111}"
-            "h1{font-size:28px}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid #ddd;padding:10px;text-align:right}"
-            "th:first-child,td:first-child{text-align:left}</style><h1>RGB–TIR Match Bench · C++/Qt</h1>"
-         << "<p>Ngưỡng đúng: " << number(config.correctnessPx, 1) << " px. Dữ liệu: "
-         << config.datasetName.toHtmlEscaped() << ".</p><table><tr><th>Method</th><th>Pairs</th><th>Precision</th>"
-            "<th>MMA@3</th><th>Inlier ratio</th><th>Median px</th><th>Coverage</th><th>ms/pair</th></tr>";
-    for (const SummaryRow &row : summary) {
-        html << "<tr><td>" << row.method.toHtmlEscaped() << "</td><td>" << row.pairs << "</td><td>"
-             << number(row.mean.precision * 100.0, 2) << "%</td><td>" << number(row.mean.mma3 * 100.0, 2)
-             << "%</td><td>" << number(row.mean.inlierRatio * 100.0, 2) << "%</td><td>"
-             << number(row.mean.medianError, 2) << "</td><td>" << number(row.mean.coverage * 100.0, 2)
-             << "%</td><td>" << number(row.mean.runtimeMs, 2) << "</td></tr>";
-    }
-    html << "</table><p><small>Metric 2D trên cặp ảnh đã căn chỉnh; không phải RMSE 3D của bài báo.</small></p></html>";
 }
 
 } // namespace rgbtir

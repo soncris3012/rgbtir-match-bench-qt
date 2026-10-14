@@ -42,7 +42,6 @@ private slots:
         int total);
     void showResult(const rgbtir::BenchmarkResult &result);
     void showFailure(const QString &message);
-    void openReport();
     void openRunDirectory();
 
 private:
@@ -72,7 +71,6 @@ private:
     QSpinBox *maxKeypoints_ = nullptr;
     QPushButton *runButton_ = nullptr;
     QPushButton *stopButton_ = nullptr;
-    QPushButton *openReportButton_ = nullptr;
     QPushButton *openRunDirectoryButton_ = nullptr;
     QProgressBar *progressBar_ = nullptr;
     QLabel *statusLabel_ = nullptr;

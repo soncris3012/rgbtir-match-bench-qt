@@ -2,6 +2,7 @@ build/
 cmake-build-*/
 .cache/
 .qtcreator/
+.idea/
 .DS_Store
 CMakeUserPresets.json
 compile_commands.json

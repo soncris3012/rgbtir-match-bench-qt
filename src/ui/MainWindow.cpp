@@ -80,7 +80,6 @@ void MainWindow::buildUi()
     maxKeypoints_ = ui_->maxKeypointsSpin;
     runButton_ = ui_->runButton;
     stopButton_ = ui_->stopButton;
-    openReportButton_ = ui_->openReportButton;
     openRunDirectoryButton_ = ui_->openRunDirectoryButton;
     progressBar_ = ui_->progressBar;
     statusLabel_ = ui_->statusLabel;
@@ -116,7 +115,6 @@ void MainWindow::buildUi()
         button->setObjectName(QStringLiteral("smallButton"));
     runButton_->setObjectName(QStringLiteral("primaryButton"));
     stopButton_->setObjectName(QStringLiteral("secondaryButton"));
-    openReportButton_->setObjectName(QStringLiteral("outlineButton"));
     openRunDirectoryButton_->setObjectName(QStringLiteral("outlineButton"));
 
     methodList_->setSelectionMode(QAbstractItemView::NoSelection);
@@ -153,7 +151,6 @@ void MainWindow::buildUi()
     connect(thermalDrop_, &DropZone::pathChanged, this, &MainWindow::validateDataset);
     connect(runButton_, &QPushButton::clicked, this, &MainWindow::startBenchmark);
     connect(stopButton_, &QPushButton::clicked, this, &MainWindow::stopBenchmark);
-    connect(openReportButton_, &QPushButton::clicked, this, &MainWindow::openReport);
     connect(openRunDirectoryButton_, &QPushButton::clicked, this, &MainWindow::openRunDirectory);
     return;
 
@@ -334,7 +331,6 @@ void MainWindow::startBenchmark()
 
     resultTable_->setRowCount(0);
     progressBar_->setValue(0);
-    openReportButton_->setEnabled(false);
     openRunDirectoryButton_->setEnabled(false);
     setRunning(true);
 
@@ -403,7 +399,6 @@ void MainWindow::showResult(const BenchmarkResult &result)
             resultTable_->setItem(row, column, new QTableWidgetItem(values.at(column)));
     }
     statusLabel_->setText(QStringLiteral("HOÀN TẤT  ·  ") + result.runDirectory);
-    openReportButton_->setEnabled(true);
     openRunDirectoryButton_->setEnabled(true);
 }
 
@@ -411,12 +406,6 @@ void MainWindow::showFailure(const QString &message)
 {
     statusLabel_->setText(QStringLiteral("LỖI  ·  ") + message);
     QMessageBox::critical(this, QStringLiteral("Benchmark thất bại"), message);
-}
-
-void MainWindow::openReport()
-{
-    if (!lastRunDirectory_.isEmpty())
-        QDesktopServices::openUrl(QUrl::fromLocalFile(lastRunDirectory_ + QStringLiteral("/report.html")));
 }
 
 void MainWindow::openRunDirectory()
